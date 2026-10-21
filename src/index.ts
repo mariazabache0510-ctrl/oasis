@@ -15,8 +15,18 @@ app.route("/api/music", musicRoutes())
 app.route("/api/orientador", orientadorRoutes())
 app.route("/api/events", eventsRoutes())
 
-app.use("/*", serveStatic({ root: "./client/dist" }))
-app.get("*", serveStatic({ path: "./client/dist/index.html" }))
+app.use("/*", serveStatic({
+  root: "./client/dist",
+  onFound(path, c) {
+    if (path.endsWith(".html") || path.endsWith("sw.js") || path.endsWith("registerSW.js")) {
+      c.header("Cache-Control", "no-cache")
+    }
+  },
+}))
+app.get("*", async (c, next) => {
+  c.header("Cache-Control", "no-cache")
+  await next()
+}, serveStatic({ path: "./client/dist/index.html" }))
 
 const port = Number(process.env.PORT) || 3000
 
