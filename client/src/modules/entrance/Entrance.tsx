@@ -1,19 +1,6 @@
-import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
-
-const SoftScene = lazy(() => import("./SoftScene"))
-
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false }
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-  render() {
-    if (this.state.failed) return <div className="scene-fallback" />
-    return this.props.children
-  }
-}
 
 type GoogleName = { given_name?: string; name?: string; email?: string }
 
@@ -27,15 +14,11 @@ export function Entrance() {
   const navigate = useNavigate()
   const { profile, signInGuest, signInGoogle } = useOasis()
   const [name, setLocalName] = useState(profile.name)
-  const [motionOk, setMotionOk] = useState(true)
   const [googleNote, setGoogleNote] = useState("")
   const googleId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const onGoogle = useRef<(credential: string) => void>(() => undefined)
 
   useEffect(() => setLocalName(profile.auth === "guest" ? profile.name : ""), [profile.auth, profile.name])
-  useEffect(() => {
-    setMotionOk(!window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-  }, [])
 
   onGoogle.current = (credential) => {
     const person = readGoogleName(credential)
@@ -76,20 +59,16 @@ export function Entrance() {
   return (
     <section className="entrance">
       <div className="scene" aria-hidden="true">
-        {motionOk ? (
-          <SceneBoundary>
-            <Suspense fallback={<div className="scene-fallback" />}>
-              <SoftScene />
-            </Suspense>
-          </SceneBoundary>
-        ) : (
-          <div className="scene-fallback" />
-        )}
+        <span className="oval-float oval-peach"><span className="oval" /></span>
+        <span className="oval-float oval-lilac"><span className="oval" /></span>
+        <span className="oval-float oval-sky"><span className="oval" /></span>
+        <span className="oval-float oval-sage"><span className="oval" /></span>
+        <span className="oval-float oval-butter"><span className="oval" /></span>
       </div>
       <div className="login-stage">
         <div className="login-halo" aria-hidden="true" />
-        <p className="phrase-hero rise">Qué bueno que estés aquí.</p>
-        <p className="phrase-slot phrase-west rise d2"><span className="phrase-chip floaty">Puedes entrar sin explicar cómo estás.</span></p>
+        <p className="phrase-slot phrase-lead rise"><span className="phrase-chip phrase-lead-chip floaty"><span className="phrase-text">Cada día es una nueva oportunidad para construir la versión de ti que deseas ser.</span></span></p>
+        <p className="phrase-slot phrase-west rise d2"><span className="phrase-chip floaty"><span className="phrase-text">El éxito es la suma de pequeños esfuerzos repetidos día tras día.</span></span></p>
         <div className="enter-card">
           <p className="eyebrow rise d1">Villavicencio</p>
           <h1 className="rise d2">Un espacio tuyo. Sin nadie mirando.</h1>
@@ -117,11 +96,7 @@ export function Entrance() {
           <p className="muted rise d6">Iniciar sesión es con Google. El correo se queda en este celular.</p>
           {googleNote ? <p className="muted">{googleNote}</p> : null}
         </div>
-        <p className="phrase-slot phrase-east rise d3"><span className="phrase-chip floaty d4">No tienes que estar bien para estar aquí.</span></p>
-        <div className="phrase-foot">
-          <p className="phrase-slot rise d4"><span className="phrase-chip floaty d2">Esto se queda en este celular.</span></p>
-          <p className="phrase-slot rise d5"><span className="phrase-chip floaty d5">Si quieres hablar, el paso es corto.</span></p>
-        </div>
+        <p className="phrase-slot phrase-east rise d3"><span className="phrase-chip floaty d4"><span className="phrase-text">El futuro pertenece a quienes creen en la belleza de sus sueños.</span></span></p>
       </div>
     </section>
   )
