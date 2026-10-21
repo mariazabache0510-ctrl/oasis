@@ -53,23 +53,14 @@ export function Entrance() {
           accounts: {
             id: {
               initialize: (options: { client_id: string; callback: (response: { credential: string }) => void }) => void
-              renderButton: (element: HTMLElement, options: object) => void
             }
           }
         }
       }).google
-      const slot = document.getElementById("google-slot")
-      if (!google || !slot) return
+      if (!google) return
       google.accounts.id.initialize({
         client_id: googleId,
         callback: (response) => onGoogle.current(response.credential),
-      })
-      google.accounts.id.renderButton(slot, {
-        theme: "outline",
-        shape: "pill",
-        size: "large",
-        text: "continue_with",
-        width: 320,
       })
     }
     script.onerror = () => setGoogleNote("Google no cargó. Puedes entrar sin cuenta.")
@@ -98,31 +89,26 @@ export function Entrance() {
       <div className="enter-card">
         <p className="eyebrow">Villavicencio</p>
         <h1>Un espacio tuyo. Sin nadie mirando.</h1>
-        <p>Hay dos formas de entrar. En las dos, lo que escribes se queda en este celular.</p>
-
-        <div className="stack">
-          <h2>Sin cuenta</h2>
-          <label className="stack">
-            <span>¿Cómo te llamo? Si quieres.</span>
-            <input className="field" value={name} maxLength={40} onChange={(event) => setLocalName(event.target.value)} />
-          </label>
-          <button className="btn btn-peach" type="button" onClick={() => void enterWithoutAccount()}>
-            Entrar sin cuenta
-          </button>
-        </div>
-
-        <p className="or">o</p>
-
-        <div className="stack">
-          <h2>Con Google</h2>
-          <p className="muted">Sirve para saludarte por tu nombre. Oasis no envía tu correo ni tu diario a un servidor.</p>
-          {googleId ? <div id="google-slot" /> : (
-            <button className="btn btn-ghost" type="button" onClick={() => setGoogleNote("El botón de Google se enciende cuando el equipo pega el identificador en Render y vuelve a publicar. Mientras, entra sin cuenta.")}>
-              Continuar con Google
-            </button>
-          )}
-          {googleNote ? <p className="muted">{googleNote}</p> : null}
-        </div>
+        <p>Lo que escribes se queda en este celular.</p>
+        <label className="stack">
+          <span>¿Cómo te llamo? Si quieres.</span>
+          <input className="field" value={name} maxLength={40} onChange={(event) => setLocalName(event.target.value)} />
+        </label>
+        <button className="btn btn-peach" type="button" onClick={() => void enterWithoutAccount()}>
+          Entrar sin cuenta
+        </button>
+        <button
+          className="btn btn-ghost"
+          type="button"
+          onClick={() => {
+            const google = (window as unknown as { google?: { accounts: { id: { prompt: () => void } } } }).google
+            if (googleId && google) google.accounts.id.prompt()
+            else setGoogleNote("El inicio con Google aparece aquí. Falta conectar el identificador en Render para que abra tu cuenta.")
+          }}
+        >
+          Continuar con Google
+        </button>
+        {googleNote ? <p className="muted">{googleNote}</p> : null}
       </div>
     </section>
   )
