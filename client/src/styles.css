@@ -273,6 +273,8 @@ textarea { min-height: 120px; resize: vertical; }
   font-weight: 700;
 }
 #google-slot { min-height: 44px; }
+.enter-card .btn { width: 100%; }
+.enter-actions { display: grid; gap: 10px; }
 
 @media (min-width: 900px) {
   .doors { grid-template-columns: repeat(3, 1fr); }
