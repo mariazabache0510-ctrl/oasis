@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
 import type { FontScale } from "../local-data/db"
 
@@ -9,6 +10,12 @@ const scales: { id: FontScale; label: string }[] = [
 
 export function Memory() {
   const oasis = useOasis()
+  const navigate = useNavigate()
+  const session = oasis.profile.auth === "google"
+    ? `Entraste con Google${oasis.profile.email ? ` · ${oasis.profile.email}` : ""}. Ese dato está solo en este celular.`
+    : oasis.profile.auth === "guest"
+      ? "Entraste sin cuenta."
+      : "Todavía no hay una entrada guardada."
   return (
     <>
       <section className="hero">
@@ -17,6 +24,7 @@ export function Memory() {
         <p className="lede">El nombre, la letra y la última puerta. El diario no sale de este celular y no lo leo yo.</p>
       </section>
       <section className="panel">
+        <p>{session}</p>
         <p>Nombre: {oasis.profile.name || "todavía no me dijiste"}.</p>
         <p>Última puerta: {oasis.profile.lastDoor || "esta"}.</p>
         <p>Notas guardadas aquí: {oasis.notes.length}. Cápsulas: {oasis.capsules.length}. Contactos: {oasis.contacts.length}.</p>
@@ -29,6 +37,9 @@ export function Memory() {
         </div>
         <button className="btn btn-butter" type="button" onClick={() => void oasis.setSimpleLanguage(!oasis.profile.simpleLanguage)}>
           {oasis.profile.simpleLanguage ? "Lenguaje sencillo activo" : "Usar lenguaje sencillo"}
+        </button>
+        <button className="btn btn-ghost" type="button" onClick={() => void oasis.signOut().then(() => navigate("/"))}>
+          Cerrar esta entrada
         </button>
         <button className="btn btn-ghost" type="button" onClick={() => void oasis.clearLocal()}>
           Borrar lo que está en este celular

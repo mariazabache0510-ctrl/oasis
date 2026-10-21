@@ -3,9 +3,13 @@ import Dexie, { type Table } from "dexie"
 export type Tone = "luminoso" | "calma" | "regular" | "bajito" | "pesado"
 export type FontScale = "md" | "lg" | "xl"
 
+export type AuthMode = "none" | "guest" | "google"
+
 export type Profile = {
   id: "me"
   name: string
+  email: string
+  auth: AuthMode
   fontScale: FontScale
   simpleLanguage: boolean
   lastOfferDay: string
@@ -41,6 +45,8 @@ export const db = new OasisDB()
 export const emptyProfile: Profile = {
   id: "me",
   name: "",
+  email: "",
+  auth: "none",
   fontScale: "md",
   simpleLanguage: false,
   lastOfferDay: "",

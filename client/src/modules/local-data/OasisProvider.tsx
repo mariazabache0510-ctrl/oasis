@@ -33,6 +33,9 @@ type OasisContextValue = {
   addContact: (name: string, phone: string) => Promise<void>
   deleteContact: (id: number) => Promise<void>
   clearLocal: () => Promise<void>
+  signInGuest: (name: string) => Promise<void>
+  signInGoogle: (name: string, email: string) => Promise<void>
+  signOut: () => Promise<void>
 }
 
 const OasisContext = createContext<OasisContextValue | null>(null)
@@ -46,7 +49,7 @@ async function loadAll() {
     db.contacts.toArray(),
   ])
   return {
-    profile: profile ?? emptyProfile,
+    profile: { ...emptyProfile, ...(profile ?? {}) },
     marks,
     notes,
     capsules,
@@ -139,6 +142,9 @@ export function OasisProvider({ children }: { children: ReactNode }) {
         await db.contacts.delete(id)
         await refresh()
       },
+      signInGuest: (name) => updateProfile({ auth: "guest", name: name.trim(), email: "" }),
+      signInGoogle: (name, email) => updateProfile({ auth: "google", name: name.trim(), email: email.trim() }),
+      signOut: () => updateProfile({ auth: "none", name: "", email: "" }),
       clearLocal: async () => {
         await db.delete()
         await db.open()

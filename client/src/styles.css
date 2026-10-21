@@ -267,6 +267,12 @@ textarea { min-height: 120px; resize: vertical; }
   box-shadow: var(--shadow);
   backdrop-filter: blur(10px);
 }
+.or {
+  text-align: center;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+#google-slot { min-height: 44px; }
 
 @media (min-width: 900px) {
   .doors { grid-template-columns: repeat(3, 1fr); }
