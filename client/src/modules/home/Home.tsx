@@ -4,30 +4,16 @@ import { todayKey, toneLabel, type Tone } from "../local-data/db"
 import { useOasis } from "../local-data/OasisProvider"
 import { track } from "../shell/track"
 
-const phrases = [
-  "Puedes entrar sin explicar cómo estás.",
-  "Qué bueno que entraste.",
-  "Esto se queda en tu celular.",
-  "Si quieres hablar con alguien, el paso es corto.",
-  "No tienes que estar bien para estar aquí.",
-]
-
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 
 export function Home() {
   const { profile, todayMark, saveMark, setOfferDay } = useOasis()
-  const [index, setIndex] = useState(0)
   const [install, setInstall] = useState<BeforeInstallPromptEvent | null>(null)
   const low = todayMark && (todayMark.tone === "bajito" || todayMark.tone === "pesado")
   const showOffer = Boolean(low && profile.lastOfferDay !== todayKey())
   const lead = profile.simpleLanguage
     ? "Aquí están los teléfonos oficiales. No tienes que contar cómo estás."
     : "Si no sabes a quién llamar en Villavicencio, aquí está el dato oficial. Sin cuenta y sin que tengas que explicar cómo estás."
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setIndex((value) => (value + 1) % phrases.length), 5000)
-    return () => window.clearInterval(timer)
-  }, [])
 
   useEffect(() => {
     const onPrompt = (event: Event) => {
@@ -72,15 +58,6 @@ export function Home() {
             </button>
           </div>
         ) : null}
-      </section>
-
-      <section className="panel carousel" aria-roledescription="carrusel">
-        <p className="slide">{phrases[index]}</p>
-        <div className="dots">
-          {phrases.map((phrase, dot) => (
-            <button key={phrase} type="button" aria-label={`Frase ${dot + 1}`} aria-current={dot === index ? "true" : undefined} onClick={() => setIndex(dot)} />
-          ))}
-        </div>
       </section>
 
       <section className="doors">

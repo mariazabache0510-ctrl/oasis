@@ -53,23 +53,14 @@ export function Entrance() {
           accounts: {
             id: {
               initialize: (options: { client_id: string; callback: (response: { credential: string }) => void }) => void
-              renderButton: (element: HTMLElement, options: object) => void
             }
           }
         }
       }).google
-      const slot = document.getElementById("google-slot")
-      if (!google || !slot) return
+      if (!google) return
       google.accounts.id.initialize({
         client_id: googleId,
         callback: (response) => onGoogle.current(response.credential),
-      })
-      google.accounts.id.renderButton(slot, {
-        theme: "outline",
-        shape: "pill",
-        size: "large",
-        text: "continue_with",
-        width: 320,
       })
     }
     script.onerror = () => setGoogleNote("Google no cargó. Puedes entrar sin cuenta.")
@@ -95,32 +86,42 @@ export function Entrance() {
           <div className="scene-fallback" />
         )}
       </div>
-      <div className="enter-card">
-        <p className="eyebrow">Villavicencio</p>
-        <h1>Un espacio tuyo. Sin nadie mirando.</h1>
-        <p>Lo que escribes se queda en este celular. Puedes entrar sin crear una cuenta.</p>
-        <label className="stack">
-          <span>¿Cómo te llamo? Si quieres.</span>
-          <input className="field" value={name} maxLength={40} onChange={(event) => setLocalName(event.target.value)} />
-        </label>
-        <div className="enter-actions">
-          <button className="btn btn-peach" type="button" onClick={() => void enterWithoutAccount()}>
-            Entrar sin cuenta
-          </button>
-          <button
-            className="btn btn-lilac"
-            type="button"
-            onClick={() => {
-              const google = (window as unknown as { google?: { accounts: { id: { prompt: () => void } } } }).google
-              if (googleId && google) google.accounts.id.prompt()
-              else setGoogleNote("Iniciar sesión usa tu cuenta de Google. Falta conectar el identificador en Render para que abra la cuenta. Mientras, puedes entrar sin cuenta.")
-            }}
-          >
-            Iniciar sesión
-          </button>
+      <div className="login-stage">
+        <div className="login-halo" aria-hidden="true" />
+        <p className="phrase-hero rise">Qué bueno que estés aquí.</p>
+        <p className="phrase-slot phrase-west rise d2"><span className="phrase-chip floaty">Puedes entrar sin explicar cómo estás.</span></p>
+        <div className="enter-card">
+          <p className="eyebrow rise d1">Villavicencio</p>
+          <h1 className="rise d2">Un espacio tuyo. Sin nadie mirando.</h1>
+          <p className="rise d3">Lo que escribes se queda en este celular.</p>
+          <label className="stack rise d4">
+            <span>¿Cómo te llamo? Si quieres.</span>
+            <input className="field" value={name} maxLength={40} onChange={(event) => setLocalName(event.target.value)} />
+          </label>
+          <div className="enter-actions rise d5">
+            <button className="btn btn-peach" type="button" onClick={() => void enterWithoutAccount()}>
+              Entrar sin cuenta
+            </button>
+            <button
+              className="btn btn-lilac"
+              type="button"
+              onClick={() => {
+                const google = (window as unknown as { google?: { accounts: { id: { prompt: () => void } } } }).google
+                if (googleId && google) google.accounts.id.prompt()
+                else setGoogleNote("Iniciar sesión usa tu cuenta de Google. Falta conectar el identificador en Render para que abra la cuenta. Mientras, puedes entrar sin cuenta.")
+              }}
+            >
+              Iniciar sesión
+            </button>
+          </div>
+          <p className="muted rise d6">Iniciar sesión es con Google. El correo se queda en este celular.</p>
+          {googleNote ? <p className="muted">{googleNote}</p> : null}
         </div>
-        <p className="muted">Iniciar sesión es con Google. El correo se queda en este celular.</p>
-        {googleNote ? <p className="muted">{googleNote}</p> : null}
+        <p className="phrase-slot phrase-east rise d3"><span className="phrase-chip floaty d4">No tienes que estar bien para estar aquí.</span></p>
+        <div className="phrase-foot">
+          <p className="phrase-slot rise d4"><span className="phrase-chip floaty d2">Esto se queda en este celular.</span></p>
+          <p className="phrase-slot rise d5"><span className="phrase-chip floaty d5">Si quieres hablar, el paso es corto.</span></p>
+        </div>
       </div>
     </section>
   )

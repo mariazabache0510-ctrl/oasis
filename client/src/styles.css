@@ -243,8 +243,9 @@ textarea { min-height: 120px; resize: vertical; }
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 24px 16px 40px;
+  padding: 32px 20px 48px;
   position: relative;
+  overflow: hidden;
 }
 .scene { position: absolute; inset: 0; }
 .scene-fallback {
@@ -256,25 +257,138 @@ textarea { min-height: 120px; resize: vertical; }
     radial-gradient(circle at 48% 62%, var(--sky), transparent 20%);
   animation: drift 16s ease-in-out infinite;
 }
+.login-stage {
+  position: relative;
+  z-index: 1;
+  width: min(1080px, 100%);
+  display: grid;
+  grid-template-columns: 1fr min(420px, 100%) 1fr;
+  grid-template-areas:
+    "hero hero hero"
+    "west card east"
+    "foot foot foot";
+  align-items: center;
+  justify-items: center;
+  column-gap: 28px;
+  row-gap: 22px;
+}
+.phrase-hero {
+  grid-area: hero;
+  margin: 0;
+  max-width: 14ch;
+  text-align: center;
+  font-family: Fraunces, serif;
+  font-weight: 600;
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+  color: var(--ink);
+}
+.phrase-west { grid-area: west; }
+.enter-card { grid-area: card; }
+.phrase-east { grid-area: east; }
+.phrase-foot {
+  grid-area: foot;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.phrase-slot { margin: 0; }
+.phrase-chip {
+  display: block;
+  max-width: 220px;
+  margin: 0;
+  padding: 16px 18px;
+  text-align: center;
+  font-family: Fraunces, serif;
+  font-size: 1.12rem;
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 24px;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 12px 30px rgba(92, 70, 58, 0.08);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.phrase-slot:hover .phrase-chip { transform: translateY(-6px) scale(1.04); }
+.login-halo {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: min(540px, 78vw);
+  height: min(540px, 78vw);
+  border-radius: 50%;
+  background: conic-gradient(from 90deg, rgba(246, 205, 182, 0), rgba(246, 205, 182, 0.85), rgba(228, 212, 244, 0), rgba(201, 228, 245, 0.8), rgba(201, 220, 200, 0));
+  filter: blur(10px);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: spin 64s linear infinite;
+}
 .enter-card {
   position: relative;
-  width: min(520px, 100%);
+  width: 100%;
   display: grid;
   gap: 14px;
-  padding: 28px 22px;
-  border-radius: 32px;
-  background: rgba(251, 246, 238, 0.78);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(10px);
-}
-.or {
+  padding: 32px 26px;
   text-align: center;
-  color: var(--ink-soft);
-  font-weight: 700;
+  border-radius: 32px;
+  background: rgba(251, 246, 238, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  box-shadow: 0 24px 60px rgba(92, 70, 58, 0.12);
+  backdrop-filter: blur(16px);
 }
-#google-slot { min-height: 44px; }
+.enter-card .field { text-align: left; }
+.enter-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
 .enter-card .btn { width: 100%; }
-.enter-actions { display: grid; gap: 10px; }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.025); }
+}
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.rise { animation: rise 0.85s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.floaty { animation: floaty 6.8s ease-in-out infinite; }
+.phrase-hero { animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both, pulse 6s ease-in-out 1s infinite; }
+.d1 { animation-delay: 0.08s; }
+.d2 { animation-delay: 0.18s; }
+.d3 { animation-delay: 0.28s; }
+.d4 { animation-delay: 0.38s; }
+.d5 { animation-delay: 0.48s; }
+.d6 { animation-delay: 0.58s; }
+.floaty.d2 { animation-delay: 0.4s; }
+.floaty.d4 { animation-delay: 1.1s; }
+.floaty.d5 { animation-delay: 1.8s; }
+
+@media (max-width: 800px) {
+  .login-stage {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "west"
+      "east"
+      "card"
+      "foot";
+  }
+  .enter-actions { grid-template-columns: 1fr; }
+  .phrase-chip { max-width: 280px; }
+}
 
 @media (min-width: 900px) {
   .doors { grid-template-columns: repeat(3, 1fr); }
