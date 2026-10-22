@@ -8,6 +8,7 @@ import "./styles.css"
 import "./pages.css"
 import "./home.css"
 import "./nearby.css"
+import "./corner.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
