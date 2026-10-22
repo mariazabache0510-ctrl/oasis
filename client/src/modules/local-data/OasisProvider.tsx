@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react"
-import { flushSync } from "react-dom"
 import {
   db,
   emptyProfile,
@@ -94,7 +93,7 @@ export function OasisProvider({ children }: { children: ReactNode }) {
     revision.current += 1
     const next = { ...profileRef.current, ...patch, id: "me" as const }
     profileRef.current = next
-    flushSync(() => setProfile(next))
+    setProfile(next)
     await db.profile.put(next)
   }
 
@@ -143,9 +142,9 @@ export function OasisProvider({ children }: { children: ReactNode }) {
         await db.contacts.delete(id)
         await refresh()
       },
-      signInGuest: (name) => updateProfile({ auth: "guest", name: name.trim(), email: "", hasSignedIn: true }),
-      signInGoogle: (name, email) => updateProfile({ auth: "google", name: name.trim(), email: email.trim(), hasSignedIn: true }),
-      signOut: () => updateProfile({ auth: "none", name: "", email: "", hasSignedIn: true }),
+      signInGuest: (name) => updateProfile({ auth: "guest", name: name.trim(), email: "", returning: true }),
+      signInGoogle: (name, email) => updateProfile({ auth: "google", name: name.trim(), email: email.trim(), returning: true }),
+      signOut: () => updateProfile({ auth: "none", name: "", email: "" }),
       clearLocal: async () => {
         await db.delete()
         await db.open()

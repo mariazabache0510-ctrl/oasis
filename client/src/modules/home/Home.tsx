@@ -1,11 +1,17 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
+import { todayKey, toneLabel, type Tone } from "../local-data/db"
 import { useOasis } from "../local-data/OasisProvider"
-import { MoodPanel } from "./MoodPanel"
+import { track } from "../shell/track"
+import { Leaves } from "./Leaves"
+
+const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 
 export function Home() {
-  const { profile } = useOasis()
+  const { profile, todayMark, saveMark, setOfferDay } = useOasis()
   const [install, setInstall] = useState<BeforeInstallPromptEvent | null>(null)
+  const low = todayMark && (todayMark.tone === "bajito" || todayMark.tone === "pesado")
+  const showOffer = Boolean(low && profile.lastOfferDay !== todayKey())
   const lead = profile.simpleLanguage
     ? "Aquí están los teléfonos oficiales. No tienes que contar cómo estás."
     : "Si no sabes a quién llamar en Villavicencio, aquí está el dato oficial. Sin cuenta y sin que tengas que explicar cómo estás."
@@ -27,24 +33,59 @@ export function Home() {
         <p className="lede">{lead}</p>
       </section>
 
-      <MoodPanel offerHref="/hablar" />
+      <section className="panel mood-panel" aria-label="Cómo vas hoy">
+        <Leaves />
+        <h2>¿Cómo vas hoy?</h2>
+        <p className="muted">
+          Un toque para que tú recuerdes cómo iba el día. Solo se guarda en este celular. No es una evaluación y no la ve nadie. Si marcas bajito o pesado, Oasis te ofrece una sola vez ver a quién llamar.
+        </p>
+        <div className="row">
+          {tones.map((tone) => (
+            <button
+              key={tone}
+              className="choice"
+              type="button"
+              aria-pressed={todayMark?.tone === tone}
+              onClick={() => void saveMark(tone)}
+            >
+              {toneLabel[tone]}
+            </button>
+          ))}
+        </div>
+        {showOffer ? (
+          <div className="row">
+            <Link className="btn btn-peach" to="/hablar" onClick={() => { track("help_offer"); void setOfferDay(todayKey()) }}>
+              ¿Quieres ver a quién puedes llamar?
+            </Link>
+            <button className="btn btn-ghost" type="button" onClick={() => void setOfferDay(todayKey())}>
+              Ahora no
+            </button>
+          </div>
+        ) : null}
+      </section>
 
       <section className="doors">
-        <Link className="door door-sky" to="/cerca">
-          <small>01</small>
-          <h2>Qué hay cerca</h2>
-          <p>Líneas oficiales, con fuente y fecha, y planes de esta semana.</p>
-        </Link>
-        <Link className="door door-lilac" to="/rincon">
-          <small>02</small>
-          <h2>Mi rincón</h2>
-          <p>Escribir, distraerte o dejarle una nota a tu yo de después.</p>
-        </Link>
-        <Link className="door door-peach" to="/hablar">
-          <small>03</small>
-          <h2>Hablar con alguien</h2>
-          <p>Qué va a pasar, una frase para leer y el número.</p>
-        </Link>
+        <div className="door-float">
+          <Link className="door door-sky" to="/cerca">
+            <small>01</small>
+            <h2>Qué hay cerca</h2>
+            <p>Líneas oficiales, con fuente y fecha, y planes de esta semana.</p>
+          </Link>
+        </div>
+        <div className="door-float">
+          <Link className="door door-lilac" to="/rincon">
+            <small>02</small>
+            <h2>Mi rincón</h2>
+            <p>Escribir, distraerte o dejarle una nota a tu yo de después.</p>
+          </Link>
+        </div>
+        <div className="door-float">
+          <Link className="door door-peach" to="/hablar">
+            <small>03</small>
+            <h2>Hablar con alguien</h2>
+            <p>Qué va a pasar, una frase para leer y el número.</p>
+          </Link>
+        </div>
       </section>
 
       {install ? (

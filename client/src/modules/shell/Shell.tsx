@@ -30,7 +30,7 @@ export function Shell() {
 
   function leave() {
     window.speechSynthesis.cancel()
-    void signOut().then(() => navigate("/entrar"))
+    void signOut().then(() => navigate("/"))
   }
 
   return (

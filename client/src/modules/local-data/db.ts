@@ -14,7 +14,7 @@ export type Profile = {
   simpleLanguage: boolean
   lastOfferDay: string
   lastDoor: string
-  hasSignedIn: boolean
+  returning: boolean
 }
 
 export type Mark = { id?: number; day: string; tone: Tone }
@@ -52,7 +52,7 @@ export const emptyProfile: Profile = {
   simpleLanguage: false,
   lastOfferDay: "",
   lastDoor: "",
-  hasSignedIn: false,
+  returning: false,
 }
 
 export function todayKey(): string {

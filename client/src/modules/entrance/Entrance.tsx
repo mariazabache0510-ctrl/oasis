@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
 
-const LotusBloom = lazy(() => import("./LotusBloom"))
+const LotusOpening = lazy(() => import("./LotusOpening"))
 
 type GoogleName = { given_name?: string; name?: string; email?: string }
 
@@ -17,30 +17,15 @@ export function Entrance() {
   const { profile, signInGuest, signInGoogle } = useOasis()
   const [name, setLocalName] = useState(profile.name)
   const [googleNote, setGoogleNote] = useState("")
-  const [bloom, setBloom] = useState(false)
+  const [opening, setOpening] = useState(false)
   const googleId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const onGoogle = useRef<(credential: string) => void>(() => undefined)
-  const pending = useRef(0)
 
   useEffect(() => setLocalName(profile.auth === "guest" ? profile.name : ""), [profile.auth, profile.name])
 
-  function openOasis(enter: () => Promise<void>) {
-    window.clearTimeout(pending.current)
-    const go = () => {
-      void enter().then(() => navigate("/inicio"))
-    }
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    if (reduce) {
-      go()
-      return
-    }
-    setBloom(true)
-    pending.current = window.setTimeout(go, 2600)
-  }
-
   onGoogle.current = (credential) => {
     const person = readGoogleName(credential)
-    openOasis(() => signInGoogle(person.given_name || person.name || "", person.email || ""))
+    void signInGoogle(person.given_name || person.name || "", person.email || "").then(() => setOpening(true))
   }
 
   useEffect(() => {
@@ -69,14 +54,18 @@ export function Entrance() {
     return () => script.remove()
   }, [googleId])
 
-  useEffect(() => () => window.clearTimeout(pending.current), [])
-
   async function enterWithoutAccount() {
-    openOasis(() => signInGuest(name))
+    await signInGuest(name)
+    setOpening(true)
   }
 
   return (
     <section className="entrance">
+      {opening ? (
+        <Suspense fallback={<div className="lotus-screen" role="status" aria-label="Abriendo Oasis" />}>
+          <LotusOpening onDone={() => navigate("/inicio")} />
+        </Suspense>
+      ) : null}
       <div className="scene" aria-hidden="true">
         <span className="oval-float oval-peach"><span className="oval" /></span>
         <span className="oval-float oval-lilac"><span className="oval" /></span>
@@ -112,19 +101,11 @@ export function Entrance() {
               Iniciar sesión
             </button>
           </div>
-          <p className="muted rise d6">Al entrar se abren las secciones. El nombre y lo que escribes se quedan en este celular.</p>
+          <p className="muted rise d6">Iniciar sesión es con Google. El correo se queda en este celular.</p>
           {googleNote ? <p className="muted">{googleNote}</p> : null}
         </div>
         <p className="phrase-slot phrase-east rise d3"><span className="phrase-chip floaty d4"><span className="phrase-text">El futuro pertenece a quienes creen en la belleza de sus sueños.</span></span></p>
       </div>
-      {bloom ? (
-        <div className="lotus-overlay" role="status">
-          <p className="lotus-caption">Tu oasis se abre.</p>
-          <Suspense fallback={null}>
-            <LotusBloom />
-          </Suspense>
-        </div>
-      ) : null}
     </section>
   )
 }
