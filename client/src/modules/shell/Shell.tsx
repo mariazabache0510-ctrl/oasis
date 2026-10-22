@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
+import { VoiceButton } from "../voice/VoiceButton"
 
 const links = [
   { to: "/inicio", label: "Inicio" },
@@ -60,6 +61,7 @@ export function Shell() {
           </NavLink>
         ))}
       </nav>
+      <VoiceButton />
     </div>
   )
 }
