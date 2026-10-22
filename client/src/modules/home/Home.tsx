@@ -1,16 +1,11 @@
 import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
-import { todayKey, toneLabel, type Tone } from "../local-data/db"
 import { useOasis } from "../local-data/OasisProvider"
-import { track } from "../shell/track"
-
-const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
+import { MoodPanel } from "./MoodPanel"
 
 export function Home() {
-  const { profile, todayMark, saveMark, setOfferDay } = useOasis()
+  const { profile } = useOasis()
   const [install, setInstall] = useState<BeforeInstallPromptEvent | null>(null)
-  const low = todayMark && (todayMark.tone === "bajito" || todayMark.tone === "pesado")
-  const showOffer = Boolean(low && profile.lastOfferDay !== todayKey())
   const lead = profile.simpleLanguage
     ? "Aquí están los teléfonos oficiales. No tienes que contar cómo estás."
     : "Si no sabes a quién llamar en Villavicencio, aquí está el dato oficial. Sin cuenta y sin que tengas que explicar cómo estás."
@@ -32,33 +27,7 @@ export function Home() {
         <p className="lede">{lead}</p>
       </section>
 
-      <section className="panel" aria-label="Cómo vas hoy">
-        <h2>¿Cómo vas hoy?</h2>
-        <p className="muted">Un toque. Solo tú lo ves. No es una evaluación.</p>
-        <div className="row">
-          {tones.map((tone) => (
-            <button
-              key={tone}
-              className="choice"
-              type="button"
-              aria-pressed={todayMark?.tone === tone}
-              onClick={() => void saveMark(tone)}
-            >
-              {toneLabel[tone]}
-            </button>
-          ))}
-        </div>
-        {showOffer ? (
-          <div className="row">
-            <Link className="btn btn-peach" to="/hablar" onClick={() => { track("help_offer"); void setOfferDay(todayKey()) }}>
-              ¿Quieres ver a quién puedes llamar?
-            </Link>
-            <button className="btn btn-ghost" type="button" onClick={() => void setOfferDay(todayKey())}>
-              Ahora no
-            </button>
-          </div>
-        ) : null}
-      </section>
+      <MoodPanel offerHref="/hablar" />
 
       <section className="doors">
         <Link className="door door-sky" to="/cerca">

@@ -10,7 +10,7 @@ const links = [
 ]
 
 export function Shell() {
-  const { profile, ready, setLastDoor } = useOasis()
+  const { profile, ready, setLastDoor, signOut } = useOasis()
   const location = useLocation()
   const navigate = useNavigate()
 
@@ -30,7 +30,7 @@ export function Shell() {
 
   function leave() {
     window.speechSynthesis.cancel()
-    navigate("/")
+    void signOut().then(() => navigate("/entrar"))
   }
 
   return (
