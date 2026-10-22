@@ -8,15 +8,6 @@ import { BubblesIcon, CapsuleIcon, HugIcon, JournalIcon, PhoneIcon } from "./Ico
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 
-function speak() {
-  const text = document.querySelector("main")?.textContent?.replace(/\s+/g, " ").trim()
-  if (!text) return
-  window.speechSynthesis.cancel()
-  const utterance = new SpeechSynthesisUtterance(text.slice(0, 700))
-  utterance.lang = "es-CO"
-  window.speechSynthesis.speak(utterance)
-}
-
 type Service = (typeof services)[number]
 
 function ServiceBackdrop({ service }: { service: Service }) {
@@ -82,9 +73,6 @@ export function Landing() {
           <a href="#hablar">Hablar</a>
         </nav>
         <div className="top-actions">
-          <button className="btn btn-ghost" type="button" onClick={speak}>
-            Escuchar
-          </button>
           <a className="btn btn-peach" href="#hablar">
             Hablar con alguien
           </a>

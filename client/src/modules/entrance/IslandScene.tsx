@@ -34,7 +34,7 @@ function Bubble({ x, z, s, speed, offset, color }: (typeof BUBBLES)[number]) {
     const node = mesh.current
     if (!node) return
     const t = (clock.elapsedTime * speed + offset) % 1
-    node.position.set(x + Math.sin(t * 6.28 + offset * 9) * 0.12, -0.2 + t * 3.1, z)
+    node.position.set(x + Math.sin(t * 6.28 + offset * 9) * 0.12, -1.35 + t * 1.55, z)
     const fade = Math.sin(t * Math.PI)
     node.scale.setScalar(s * (0.6 + fade * 0.6))
     ;(node.material as { opacity: number }).opacity = 0.2 + fade * 0.55
@@ -111,7 +111,7 @@ function Rig({ children, calm }: { children: ReactNode; calm: boolean }) {
     const node = group.current
     if (!node) return
     const t = clock.elapsedTime
-    node.position.y = calm ? 0 : Math.sin(t * 0.8) * 0.12
+    node.position.y = -1.15 + (calm ? 0 : Math.sin(t * 0.8) * 0.08)
     const targetY = pointer.x * 0.5 + (calm ? 0 : t * 0.12)
     node.rotation.y += (targetY - node.rotation.y) * Math.min(1, delta * 2.2)
     node.rotation.x += (-pointer.y * 0.18 - node.rotation.x) * Math.min(1, delta * 2.2)
@@ -139,7 +139,8 @@ export default function IslandScene() {
   return (
     <Canvas
       style={{ position: "absolute", inset: 0 }}
-      camera={{ position: [0, 0.8, 4.3], fov: 40 }}
+      camera={{ position: [0, 0.2, 8.1], fov: 34 }}
+      onCreated={({ camera }) => camera.lookAt(0, -1.05, 0)}
       dpr={[1, 1.5]}
       frameloop={calm ? "demand" : "always"}
       gl={{ alpha: true, antialias: true }}

@@ -19,17 +19,7 @@ export function Shell() {
     if (profile.lastDoor !== location.pathname) void setLastDoor(location.pathname)
   }, [ready, location.pathname, profile.lastDoor, setLastDoor])
 
-  function speak() {
-    const text = document.querySelector("main")?.textContent?.replace(/\s+/g, " ").trim()
-    if (!text) return
-    window.speechSynthesis.cancel()
-    const utterance = new SpeechSynthesisUtterance(text.slice(0, 700))
-    utterance.lang = "es-CO"
-    window.speechSynthesis.speak(utterance)
-  }
-
   function leave() {
-    window.speechSynthesis.cancel()
     void signOut().then(() => navigate("/"))
   }
 
@@ -53,9 +43,6 @@ export function Shell() {
           <Link className="btn btn-ghost" to="/recuerdo">
             Tuyo
           </Link>
-          <button className="btn btn-ghost" type="button" onClick={speak}>
-            Escuchar
-          </button>
           <Link className="btn btn-peach" to="/hablar">
             Hablar con alguien
           </Link>

@@ -46,8 +46,9 @@ type GoogleName = { given_name?: string; name?: string; email?: string }
 
 function readGoogleName(credential: string): GoogleName {
   const payload = credential.split(".")[1] ?? ""
-  const json = atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
-  return JSON.parse(json) as GoogleName
+  const binary = atob(payload.replace(/-/g, "+").replace(/_/g, "/"))
+  const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0))
+  return JSON.parse(new TextDecoder("utf-8").decode(bytes)) as GoogleName
 }
 
 export function Entrance() {
@@ -225,7 +226,7 @@ export function Entrance() {
                   setGoogleNote(
                     googleId
                       ? "Google todavía está cargando. Intenta de nuevo en un momento."
-                      : "Para entrar con Google falta conectar el identificador de la app. Mientras tanto puedes crear una cuenta aquí o entrar sin cuenta.",
+                      : "Google no está disponible por ahora. Puedes crear una cuenta aquí o entrar sin cuenta.",
                   )
                 }
               >
