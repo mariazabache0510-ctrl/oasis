@@ -2,7 +2,7 @@
   <img src="docs/assets/hero.svg" alt="Oasis. Un espacio tuyo para llegar a las rutas de apoyo en Villavicencio." width="960">
 </p>
 
-Oasis es un prototipo académico para Villavicencio. Por fuera informa y deja entrar. Por dentro es un lugar para quedarse: un sonido, un juego sin puntaje, una nota para después y una marca del día que no es un diagnóstico. Las líneas oficiales siguen a un lado, con fuente y fecha. No diagnostica, no atiende y no es un servicio de salud.
+Oasis es un prototipo académico para Villavicencio. Por fuera informa y deja entrar. Por dentro es un lugar para quedarse: un sonido, un juego sin puntaje, una nota para después, un compañero con el que se puede escribir y una marca del día que no es un diagnóstico. Las líneas oficiales siguen a un lado, con fuente y fecha. No diagnostica, no atiende y no es un servicio de salud.
 
 La versión publicada está en [oasis-hiu0.onrender.com](https://oasis-hiu0.onrender.com).
 
@@ -14,16 +14,16 @@ La versión publicada está en [oasis-hiu0.onrender.com](https://oasis-hiu0.onre
 
 | Ruta | Quién entra | Qué guarda o muestra |
 | --- | --- | --- |
-| `/` | Cualquier persona | La primera visita abre la página pública. Si ya hubo una entrada en este navegador, abre la puerta de acceso. |
-| `/entrar` | Cualquier persona | Registro local, ingreso, Google si hay identificador, o continuar sin cuenta. |
+| `/` | Cualquier persona | Página pública. El botón dice Registrarse, o Entrar si este navegador ya tuvo una sesión. |
+| `/entrar` | Cualquier persona | Registro local, ingreso, Google si hay identificador, o continuar sin cuenta. La primera vez de la sesión, al entrar, el loto se abre si hay WebGL y el movimiento está permitido. |
 | `/inicio` | Sesión abierta | El patio: sonido, burbujas, nota al futuro, marca y tres puertas. |
 | `/cerca` | Sesión abierta | Fichas con guion, mapa y agenda filtrable. |
 | `/rincon` | Sesión abierta | Diario, distracción, cápsula y marca. |
-| `/hablar` | Sesión abierta | Qué pasa al llamar, una frase, el número y un enlace de WhatsApp si el catálogo ya lo trae. |
-| `/recuerdo` | Sesión abierta | Resumen local, tamaño de letra, lenguaje sencillo y modo noche. |
+| `/hablar` | Sesión abierta | Chat con el compañero y, si la pregunta pide ayuda, la ficha oficial con fuente y fecha. También el enlace de WhatsApp si el catálogo ya lo trae. |
+| `/recuerdo` | Sesión abierta | Nombre, forma y nota del compañero. Resumen local, tamaño de letra, lenguaje sencillo y modo noche. |
 | `/sala` | Clave de colegio, aparte de la sesión personal | Conteos anónimos y publicación de actividades de ejemplo. |
 
-La página pública informa. Después de entrar, la barra, el inicio y las secciones son el espacio vivido: la distracción va primero y hablar con alguien es una puerta más. El registro activa el diario, la cápsula, los contactos y la voz.
+La página pública informa. Después de entrar, el tipo de dispositivo elige un menú: grilla en el celular, riel en la tablet o barra en el computador. El inicio y las secciones son el espacio vivido: la distracción va primero y hablar con alguien es una puerta más. El registro activa el diario, la cápsula, los contactos, el compañero y la voz.
 
 ## Tecnologías
 
@@ -41,12 +41,13 @@ La página pública informa. Después de entrar, la barra, el inicio y las secci
 | Dexie | IndexedDB de este navegador. El diario no sale de ahí. |
 | PostgreSQL 16 | Opcional, en Docker. Solo conteos anónimos y actividades de ejemplo. Si no arranca, el espacio personal sigue. |
 | React Router 7 | Rutas de la aplicación y comandos de voz. |
-| Three.js y React Three Fiber | Isla de la entrada. Si esa escena falla, la entrada sigue usable. |
+| Three.js y React Three Fiber | Isla de la entrada y apertura del loto. Si esa escena falla, la entrada sigue usable. |
+| GSAP | Reloj de la apertura del loto. |
 | Leaflet y OpenStreetMap | Mapa de Cerca. El punto de ubicación no se guarda. |
-| vite-plugin-pwa y Workbox | Aplicación instalable, con caché de estáticos. |
-| Docker | Imagen de producción en dos etapas. |
+| vite-plugin-pwa y Workbox | Aplicación instalable. El manifiesto usa `standalone`. El favicon y los iconos son el loto propio. |
+| Docker | Imagen de producción en dos etapas. Compose también levanta Postgres 16. |
 
-La paleta del producto es crema `#fbf6ee`, salvia `#c9dcc8`, durazno `#f6cdb6`, lila `#e4d4f4`, cielo `#c9e4f5` y mantequilla `#f8e7b0`, con tinta `#3d3a46`. Los títulos usan Fraunces y el texto Nunito.
+La paleta del producto es crema `#fbf6ee`, salvia `#c9dcc8`, durazno `#f6cdb6`, lila `#e4d4f4`, cielo `#c9e4f5` y mantequilla `#f8e7b0`, con tinta `#3d3a46`. Los títulos usan Fraunces y el texto Nunito. El modo noche, con `html[data-theme="noche"]`, oscurece fondo, tinta y tarjetas. Si el sistema pide oscuro y todavía no hay una preferencia guardada, la primera carga usa noche.
 
 ## Arranque local
 
@@ -65,9 +66,9 @@ npm run build
 npm start
 ```
 
-Queda en [http://127.0.0.1:3000](http://127.0.0.1:3000). `GET /api/health` responde `{"ok":true}`.
+Queda en [http://127.0.0.1:3000](http://127.0.0.1:3000). `GET /api/health` responde `ok: true` y `ops`: `sin-configurar` si no hay `DATABASE_URL`, `postgres` si la base responde, o `no-disponible` si la URL existe y la base no contesta.
 
-Las pruebas cubren playlists, la agenda y sus tres filtros, el orientador, el enlace de WhatsApp, la semilla de métricas y los comandos de voz. Si no hay `DATABASE_URL`, la prueba de Postgres se omite:
+Las pruebas cubren playlists, la agenda y sus tres filtros, el orientador, el enlace de WhatsApp, la semilla de métricas, los comandos de voz, la palabra Oasis, el llenado hablado del formulario, las respuestas locales del compañero y la dirección de los pétalos. Si no hay `DATABASE_URL`, la prueba de Postgres se omite:
 
 ```bash
 npm test
@@ -93,7 +94,7 @@ docker compose up
 
 ## Variables
 
-Copia `.env.example` a `.env`. El archivo real está en `.gitignore`. Si faltan, Oasis sigue funcionando: las playlists se ocultan, el orientador no pide una frase extra y el botón de Google no aparece.
+Copia `.env.example` a `.env`. El archivo real está en `.gitignore`. Si faltan, Oasis sigue funcionando: las playlists se ocultan, el compañero y el orientador se quedan con la frase local, y el botón de Google no aparece.
 
 | Variable | Cuándo se lee | Uso |
 | --- | --- | --- |
@@ -102,7 +103,7 @@ Copia `.env.example` a `.env`. El archivo real está en `.gitignore`. Si faltan,
 | `SPOTIFY_PLAYLIST_ID` | Arranque | Id o URL pública de la playlist. |
 | `YOUTUBE_API_KEY` | Arranque | Clave de la API de YouTube. |
 | `YOUTUBE_PLAYLIST_ID` | Arranque | Id o URL de la playlist. |
-| `GEMINI_API_KEY` | Arranque | Frase corta del orientador. Opcional. |
+| `GEMINI_API_KEY` | Arranque | Frase opcional del compañero y del orientador. Si falta, queda la respuesta local. |
 | `GEMINI_MODEL` | Arranque | Por defecto `gemini-2.0-flash`. |
 | `VITE_GOOGLE_CLIENT_ID` | Build de Vite | Botón de Google. Identificador público. |
 | `PORT` | Arranque | Puerto HTTP. Por defecto 3000. Render lo inyecta. |
@@ -116,11 +117,11 @@ Copia `.env.example` a `.env`. El archivo real está en `.gitignore`. Si faltan,
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Módulos, datos, API y construcción. |
 | [SECURITY.md](SECURITY.md) | Qué se guarda, qué no sale del dispositivo y límites del prototipo. |
 | [CHANGELOG.md](CHANGELOG.md) | Historia del prototipo. |
-| [docs/trl4/pitch.md](docs/trl4/pitch.md) | Pitch de cinco minutos. |
 | [docs/trl4/casos.md](docs/trl4/casos.md) | Escenarios de las funciones críticas. |
 | [docs/trl4/evidencia.md](docs/trl4/evidencia.md) | Salida real de las pruebas. |
 | [docs/trl4/fuentes.md](docs/trl4/fuentes.md) | Teléfonos con fuente y lo que es ficción. |
 | [docs/trl4/operacion.md](docs/trl4/operacion.md) | Quién verifica y cómo se reporta un canal caído. |
 | [docs/trl4/declaracion.md](docs/trl4/declaracion.md) | Trabajo previo, herramientas y licencias. |
+| [LICENSE](LICENSE) | Propiedad de los autores. Todos los derechos reservados. |
 
-Prototipo académico. No es un servicio de salud. Las líneas citan el Directorio de salud mental y prevención del suicidio de MinSalud, consultado el 19 oct 2026. La agenda marca como ejemplo todo evento que todavía no tiene fuente confirmada.
+Prototipo académico. No es un servicio de salud. El material original de este repositorio es propiedad de Darwin Joan Aveiga Mora, Mariana Sofia Azabache Moreno y Julian Esteban Chavez Zamora. No se concede licencia de uso, copia ni modificación. Las dependencias de terceros conservan su propia licencia. Las líneas citan el Directorio de salud mental y prevención del suicidio de MinSalud, consultado el 19 oct 2026. La agenda marca como ejemplo todo evento que todavía no tiene fuente confirmada.

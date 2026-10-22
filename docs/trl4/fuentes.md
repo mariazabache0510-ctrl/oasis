@@ -13,7 +13,7 @@ No se agregó ningún teléfono que no estuviera ya en `src/modules/directory/ca
 | Línea 106 | 106 | no tiene | 24 horas, todos los días |
 | Línea 01 8000 931 089 | 01 8000 931 089 | no tiene | Según el directorio consultado |
 
-Cada ficha repite la fuente y la fecha dentro de la interfaz.
+Cada ficha repite la fuente y la fecha dentro de la interfaz. El chat del compañero no agrega teléfonos: si la pregunta pide ayuda, muestra una de estas fichas, con la misma fuente y la misma fecha.
 
 ## Ficción, marcada como ejemplo
 

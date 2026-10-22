@@ -49,6 +49,23 @@ type VoiceContextValue = {
 const VoiceContext = createContext<VoiceContextValue | null>(null)
 
 const HONEST = "El navegador puede enviar el audio a su proveedor de reconocimiento. Oasis no guarda lo que dices."
+const NOTICE_KEY = "oasis-voice-notice"
+
+function noticeSeen(): boolean {
+  try {
+    return localStorage.getItem(NOTICE_KEY) === "1"
+  } catch {
+    return false
+  }
+}
+
+function rememberNotice() {
+  try {
+    localStorage.setItem(NOTICE_KEY, "1")
+  } catch {
+    /* el aviso igual se cierra en esta visita */
+  }
+}
 
 export function VoiceProvider({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
@@ -301,46 +318,96 @@ function MicIcon() {
   )
 }
 
-function VoiceDock() {
+function VoiceControls() {
   const voice = useVoice()
   const listening = voice.phase === "wake" || voice.phase === "once"
+  if (!voice.supported) {
+    return <p className="voice-hint">Este navegador no ofrece reconocimiento de voz. El menú sigue disponible.</p>
+  }
+  if (voice.phase === "idle") {
+    return (
+      <button className="voice-arm" type="button" onClick={voice.arm}>
+        Oasis puede escucharte
+      </button>
+    )
+  }
+  return (
+    <div className="voice-panel">
+      {listening ? (
+        <span className="voice-wave" aria-hidden="true">
+          <i /><i /><i /><i />
+        </span>
+      ) : null}
+      {voice.phase === "wake" ? <span className="voice-listening">Escuchando</span> : null}
+      {voice.phase === "fallback" ? <span className="voice-listening">Usa el botón</span> : null}
+      <button className="voice-stop" type="button" onClick={voice.pushToTalk}>
+        Hablar
+      </button>
+      <button className="voice-stop" type="button" onClick={voice.stop}>
+        Detener
+      </button>
+    </div>
+  )
+}
+
+function VoiceDock() {
+  const voice = useVoice()
+  const [open, setOpen] = useState(() => !noticeSeen())
+  const [toastOpen, setToastOpen] = useState(false)
+  const listening = voice.phase === "wake" || voice.phase === "once"
+
+  useEffect(() => {
+    if (!voice.toast) {
+      setToastOpen(false)
+      return
+    }
+    setToastOpen(true)
+    const timer = window.setTimeout(() => setToastOpen(false), 4200)
+    return () => window.clearTimeout(timer)
+  }, [voice.toast])
+
+  function closeSheet() {
+    setOpen(false)
+    rememberNotice()
+  }
+
+  const showToast = Boolean(voice.toast) && toastOpen && !open
+  const showLiveBar = !open && voice.supported && voice.phase !== "idle"
+
   return (
     <div className="voice">
       <div className="sr-only" role="status" aria-live="polite">
         {voice.toast ?? ""}
       </div>
-      <p className="voice-note">{HONEST}</p>
-      {voice.toast ? <p className="voice-toast-text voice-card">{voice.toast}</p> : null}
-      {voice.phase === "fallback" ? (
-        <p className="voice-card">En este navegador la escucha no se queda abierta. Usa el botón para hablar.</p>
-      ) : null}
-      {voice.phase === "wake" ? <p className="voice-card">Escuchando la palabra Oasis.</p> : null}
-      {!voice.supported ? (
-        <p className="voice-card">Este navegador no ofrece reconocimiento de voz. El menú sigue disponible.</p>
-      ) : voice.phase === "idle" ? (
-        <button className="voice-arm" type="button" onClick={voice.arm}>
-          Oasis puede escucharte
-        </button>
-      ) : (
-        <div className="voice-panel">
-          {listening ? (
-            <span className="voice-wave" aria-hidden="true">
-              <i /><i /><i /><i />
-            </span>
-          ) : null}
-          <button className="voice-stop" type="button" onClick={voice.pushToTalk}>
-            Hablar
+      {open ? (
+        <section className="voice-sheet" aria-label="Aviso de voz">
+          <button className="voice-x" type="button" aria-label="Cerrar aviso de voz" onClick={closeSheet}>
+            ×
           </button>
-          <button className="voice-stop" type="button" onClick={voice.stop}>
-            Detener
-          </button>
-        </div>
-      )}
-      {voice.supported && voice.phase === "idle" ? null : voice.supported ? (
-        <button className="voice-fab" type="button" aria-pressed={listening} aria-label={listening ? "Dejar de escuchar" : "Hablar con Oasis"} onClick={listening ? voice.stop : voice.pushToTalk}>
-          <MicIcon />
-        </button>
+          <p className="voice-note">{HONEST}</p>
+          <p className="voice-hint">Di Oasis cuando quieras que te escuche.</p>
+          <VoiceControls />
+        </section>
       ) : null}
+      {showToast ? (
+        <p className="voice-toast">
+          <button className="voice-x" type="button" aria-label="Cerrar mensaje" onClick={() => setToastOpen(false)}>
+            ×
+          </button>
+          <span className="voice-toast-text">{voice.toast}</span>
+        </p>
+      ) : null}
+      {showLiveBar ? <VoiceControls /> : null}
+      <button
+        className="voice-fab"
+        type="button"
+        aria-pressed={open || listening}
+        aria-expanded={open}
+        aria-label={open ? "Cerrar aviso de voz" : "Abrir voz de Oasis"}
+        onClick={() => (open ? closeSheet() : setOpen(true))}
+      >
+        <MicIcon />
+      </button>
     </div>
   )
 }

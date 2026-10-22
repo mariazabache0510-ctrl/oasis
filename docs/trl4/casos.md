@@ -33,24 +33,35 @@ Entorno controlado: este repositorio, datos sintéticos y escenarios ficticios. 
 - "Usar donde estoy" mueve el mapa y no escribe coordenadas en IndexedDB.
 - Los puntos salvia dicen Ejemplo. No tienen teléfono.
 
-## 6. Orientador
+## 6. Compañero
 
-- "Estoy en Bogotá" -> Línea 106.
-- "Quiero la línea gratuita" -> Línea 01 8000 931 089.
-- "Estoy en Villavicencio" -> Yo Te Escucho.
-- En todos los casos se lee el límite: no es un profesional, no diagnostica ni recomienda tratamientos. Si no hay red, no se pide frase a Gemini.
+- Entrada: `/hablar`, con el compañero por defecto (nombre Loto, forma loto).
+- Esperado: un saludo no muestra ficha. "Estoy en Bogotá y quiero llamar" muestra la Línea 106. "Me hacen domicilios?" muestra Yo Te Escucho y dice que no puede confirmar visitas. Una frase del modelo con tratamiento, medicamento o un teléfono ajeno al catálogo se descarta y queda la respuesta local.
+- La ficha, cuando aparece, trae fuente y fecha. El límite dice que no diagnostica ni recomienda tratamientos.
+- En `/recuerdo` se cambian el nombre, la forma (loto, isla, gota o bruma) y la nota. Eso queda en IndexedDB. No es una ficha clínica.
+- Si no hay `GEMINI_API_KEY` o no hay red, la respuesta local sigue. No se afirma que Gemini funcione sin red.
 
-## 7. Sala y Postgres
+## 7. Voz
+
+- Primer toque al micrófono, y luego la frase "Oasis, abre mi rincón".
+- Esperado: sin la palabra Oasis, la escucha continua no navega. Con ella, abre `/rincon`.
+- En `/entrar`, una frase con correo y clave llena el formulario. El aviso no repite la clave.
+- El panel dice que el navegador puede enviar el audio a su proveedor de reconocimiento. Si ese navegador no ofrece reconocimiento, el menú sigue disponible.
+
+## 8. Menús, noche y loto
+
+- El celular usa la grilla de abajo, la tablet el riel y el computador la barra. Cada tipo de dispositivo tiene el suyo.
+- "Noche" pone `data-theme="noche"` y el botón pasa a "Día". "Letra grande" y "Lenguaje sencillo" siguen en `/recuerdo`.
+- Al entrar, si hay WebGL y no está pedido menos movimiento, se abre el loto: se puede saltar, invertir la dirección de los pétalos y pasar a la versión liviana. El agua refleja los pétalos. `prefers-reduced-motion` deja una cortina corta, sin la escena 3D.
+- La misma sesión del navegador no vuelve a montar el loto.
+
+## 9. Sala y Postgres
 
 - Sin `DATABASE_URL`: `GET /api/metrics/semilla` devuelve la semilla (40 visitas, 7 ayudas, 15 distracciones, 12 agendas, tonos 8, 11, 9, 6 y 4). El diario sigue en el navegador.
 - Sin `ADMIN_PASSWORD`: `POST /api/admin/entrar` responde 503.
 - Con clave y sin Postgres: entrar responde 200 y `GET /api/admin/resumen` dice que la base no está disponible.
 - Con Postgres: la sala puede publicar una actividad. Aparece en la agenda como Ejemplo. El formulario no puede quitar esa marca.
 
-## 8. Noche, letra y movimiento
-
-- "Noche" oscurece la misma paleta. "Letra grande" y "Lenguaje sencillo" siguen en `/recuerdo`. `prefers-reduced-motion` sigue apagando animaciones.
-
-## 9. Sin red
+## 10. Sin red
 
 - Con la aplicación ya cargada, las fichas, los teléfonos, el guion y el botón "Hablar con alguien" se dibujan desde el paquete. No se afirma que la frase de Gemini funcione sin red.

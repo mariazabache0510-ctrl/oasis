@@ -98,7 +98,7 @@ export function CompanionChat({ onService }: Props) {
         {messages.map((message) => {
           const service = message.serviceId ? getService(message.serviceId) : undefined
           return (
-            <article key={message.id ?? message.createdAt} className={message.role === "person" ? "bubble bubble-person" : "bubble bubble-companion"}>
+            <article key={message.id ?? message.createdAt} className={message.role === "person" ? "chat-line chat-line-person" : "chat-line chat-line-companion"}>
               <p>{message.text}</p>
               {service ? <ServiceSlip service={service} /> : null}
             </article>

@@ -4,7 +4,7 @@ Oasis es un prototipo académico. Esta nota describe qué protege hoy, qué qued
 
 ## Alcance
 
-El objetivo es no sacar del navegador el diario, las cápsulas, la marca del día, los contactos de confianza ni la contraseña. El servidor publica catálogos, puede sumar conteos anónimos y, si hay llaves, consulta Spotify, YouTube o Gemini.
+El objetivo es no sacar del navegador el diario, las cápsulas, la marca del día, los contactos de confianza ni la contraseña. El nombre, la forma y la nota del compañero también se quedan en IndexedDB. El texto del chat sí sale hacia `POST /api/companion` cuando esa llamada responde: el servidor no lo escribe en Postgres, y si hay `GEMINI_API_KEY` se lo manda a Gemini junto con la nota y hasta ocho turnos recientes. Si la llamada falla, la respuesta se arma en el navegador. El servidor publica catálogos, puede sumar conteos anónimos y, si hay llaves, consulta Spotify, YouTube o Gemini.
 
 No es un servicio clínico. No hay historia clínica, no hay profesionales asignados y el orientador dice en cada respuesta que no diagnostica ni recomienda tratamientos.
 
@@ -12,13 +12,13 @@ La idea de un perfil clínico oculto por persona queda rechazada. Choca con "cer
 
 ## Datos que se quedan en el dispositivo
 
-IndexedDB (`oasis`) guarda el perfil, las marcas, las notas, las cápsulas y hasta dos contactos. Salir de la sesión no borra esa base. Borrar los datos del sitio en el navegador, o usar la acción de vaciar el espacio, sí la elimina.
+IndexedDB (`oasis`, versión 2) guarda el perfil, las marcas, las notas, las cápsulas, hasta dos contactos y las líneas del chat. El perfil incluye al compañero: nombre, forma (`loto`, `isla`, `gota` o `bruma`) y nota. Salir de la sesión no borra esa base. Borrar los datos del sitio en el navegador, o usar la acción de vaciar el espacio, sí la elimina.
 
 Quien tenga el perfil del navegador desbloqueado puede leer esa base con las herramientas del propio navegador. El cifrado de la contraseña no cifra el diario.
 
 La ubicación de Cerca se pide solo al pulsar "Usar donde estoy". Se usa para mover el mapa en ese momento y no se envía a la API ni se escribe en IndexedDB. Los puntos marcados Ejemplo son coordenadas fijas de ficción, no sedes reales.
 
-La navegación por voz usa el reconocimiento del navegador. Oasis compara el texto en el dispositivo y no lo manda a su servidor. Según el navegador, el audio puede ir al proveedor de ese reconocimiento. Si esa salida no es aceptable, las mismas secciones están en la barra.
+La voz usa el reconocimiento del navegador. El primer toque al micrófono lo activa. Después, la escucha continua espera la palabra Oasis. Oasis compara el texto en el dispositivo y no lo manda a su servidor. En `/entrar` puede escribir el nombre, el correo y la clave en el formulario. El aviso de la pantalla no repite la clave, y el código de voz no la escribe en la consola. Según el navegador, el audio puede ir al proveedor de ese reconocimiento. Si esa salida no es aceptable, las mismas secciones están en el menú del dispositivo.
 
 ## Cuenta local
 
@@ -49,13 +49,14 @@ Las rutas `/api` no piden sesión ni token.
 | Directorio, agenda y salud | Lectura de datos ya publicados en el repositorio. |
 | Playlists | El servidor llama a Spotify o YouTube con las llaves y devuelve nombre, portada y URL de inserción. No devuelve la llave. |
 | Orientador | Recibe un texto, lo recorta a 280 caracteres para el modelo y elige una ficha por reglas. No lo guarda. |
+| Compañero | Recibe el mensaje (hasta 400 caracteres), el nombre, la nota y hasta 8 turnos. No los guarda. Gemini solo sustituye la frase si no trae diagnóstico, tratamiento, medicamento, dosis ni un teléfono fuera del catálogo. |
 | `POST /api/events` | Suma un conteo permitido. Un tipo desconocido responde 400. Un tono que no sea luminoso, calma, regular, bajito o pesado se descarta. No se guarda el texto de un diario. |
 | `/api/admin` | Exige `ADMIN_PASSWORD` y un token de ese proceso. Publicar una actividad la fuerza como ejemplo. |
 | WhatsApp | El navegador abre `https://wa.me/` con un texto que la persona puede editar. No hay API de WhatsApp Business ni envío desde el servidor. |
 
 No hay límite de frecuencia. Un cliente puede incrementar los contadores o llamar al orientador tantas veces como el proceso aguante. En el plan gratuito de Render el proceso es uno solo y se reinicia al desplegar.
 
-La frase de Gemini se descarta si viene vacía, si la llamada falla o si contiene términos de diagnóstico, tratamiento, medicamento, dosis o suicidio. El filtro es una red de apoyo, no una garantía. La ficha oficial y su límite siguen en la respuesta aunque la frase se descarte.
+La frase de Gemini del orientador se descarta si viene vacía, si la llamada falla o si contiene términos de diagnóstico, tratamiento, medicamento, dosis o suicidio. La del compañero se descarta por diagnóstico, tratamiento, medicamento, dosis o un teléfono que no está en el catálogo, y entonces queda la frase local. El filtro es una red de apoyo, no una garantía. La ficha oficial y su límite siguen en la respuesta aunque la frase se descarte.
 
 ## Secretos
 
@@ -90,7 +91,8 @@ No van en argumentos de `docker build`. Esos argumentos quedan en el historial d
 - No limita el ritmo de la API.
 - No guarda un registro de auditoría de las llamadas.
 - No sustituye a la Línea 106, a Yo Te Escucho Villavicencio ni a la Línea 01 8000 931 089.
-- No opera un chatbot de WhatsApp.
+- No opera un chatbot de WhatsApp. El chat de Oasis es el compañero de la página, no un bot de WhatsApp.
+- No registra la clave que la voz deja en el formulario.
 - No guarda un perfil clínico por persona.
 - No presenta como reales los eventos ni los puntos marcados Ejemplo.
 - No hace funcionar a Gemini sin red.

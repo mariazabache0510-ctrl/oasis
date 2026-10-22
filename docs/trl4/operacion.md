@@ -10,6 +10,8 @@ Cada cuánto: al inicio de cada periodo académico y cada vez que MinSalud publi
 
 Si un enlace o un teléfono no responde: la ficha tiene "Anotar que no contestó". Eso copia un aviso sin datos de una persona (línea, teléfono publicado, fuente, fecha de consulta y día de la prueba). Quien opera el prototipo envía ese aviso a la entidad dueña de la línea o lo deja en un issue del repositorio, sin pegar `.env` ni relatos personales. El número no se reemplaza en la interfaz hasta tener otra fuente y otra fecha. No hay un buzón automático que dé de baja un teléfono.
 
+El compañero de `/hablar` usa esa misma ficha. No tiene una fuente distinta ni una fecha propia.
+
 ## Actividades
 
 Quién publica un borrador: la sala `/sala`, pensada como el canal de un colegio o una comunidad. Hace falta `ADMIN_PASSWORD` y Postgres. El borrador entra como ejemplo.

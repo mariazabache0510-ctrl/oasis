@@ -117,6 +117,7 @@ export function Corner() {
     <>
       <Celebration cheer={cheer} onDone={closeCheer} />
 
+      <div className="corner">
       <PageHead
         featured
         underline
@@ -380,6 +381,7 @@ export function Corner() {
             </div>
           </section>
         ) : null}
+      </div>
       </div>
     </>
   )

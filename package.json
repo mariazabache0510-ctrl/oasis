@@ -1,6 +1,7 @@
 {
   "name": "oasis",
   "private": true,
+  "license": "UNLICENSED",
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",

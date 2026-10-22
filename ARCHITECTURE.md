@@ -35,32 +35,39 @@ El cliente habla con el mismo origen. En desarrollo, Vite reenvía `/api` a `127
 
 | Pieza | Archivo | Responsabilidad |
 | --- | --- | --- |
-| Puerta | `modules/entrance/Entrance.tsx` | Registro, ingreso, Google y entrada sin cuenta. La isla 3D y el loto van en carga diferida. |
-| Página pública | `modules/home/Landing.tsx` | Primera visita, sin sesión. |
-| Shell | `modules/shell/Shell.tsx` | Barra, salida y botón de voz. Solo con sesión. |
+| Puerta | `modules/entrance/Entrance.tsx` | Registro, ingreso, Google y entrada sin cuenta. La isla y el loto van en carga diferida. |
+| Loto | `modules/entrance/LotusStage.tsx` | Apertura con Three.js y GSAP: saltar, invertir pétalos, reflejo en el agua y versión liviana. |
+| Página pública | `modules/home/Landing.tsx` | Visita sin sesión. Sigue en `/` aunque este navegador ya haya entrado antes. |
+| Menús | `modules/shell/menus.tsx` | Tres menús distintos: grilla del celular, riel de la tablet y barra del computador. |
+| Shell | `modules/shell/Shell.tsx` | Menú del interior, cinta y salida. Solo con sesión. |
+| Marca | `modules/shell/OasisMark.tsx` | Loto propio, el mismo dibujo del favicon. |
 | Inicio | `modules/home/Home.tsx` | Patio, marca del día y puertas. No repite la página pública. |
 | Sala | `modules/admin/Sala.tsx` | Conteos anónimos y publicación de ejemplos. Ruta `/sala`, fuera del shell personal. |
 | Cerca | `modules/nearby/Nearby.tsx` | Fichas, mapa y agenda. |
 | Rincón | `modules/corner/Corner.tsx` | Diario, distracción, cápsula y marca. |
-| Hablar | `modules/talk/Talk.tsx` | Fichas de llamada y pregunta al orientador. |
-| Recuerdo | `modules/memory/Memory.tsx` | Conteos locales, letra y lenguaje sencillo. |
-| Voz | `modules/voice/` | Web Speech API del navegador. El texto se compara en el dispositivo contra palabras fijas. |
+| Hablar | `modules/talk/Talk.tsx` | Chat del compañero y ficha oficial. El enlace de WhatsApp es `wa.me`. |
+| Compañero | `modules/talk/CompanionSetup.tsx` | Nombre, forma (loto, isla, gota o bruma) y nota. Vive en Recuerdo. |
+| Recuerdo | `modules/memory/Memory.tsx` | Compañero, conteos locales, letra y lenguaje sencillo. |
+| Voz | `modules/voice/VoiceProvider.tsx` | Tras el primer toque al micrófono, la escucha continua espera la palabra Oasis. En `/entrar` puede llenar el formulario. |
 
-`useDevice` elige "este computador", "esta tablet" o "este celular" para hablar de dónde viven los datos. No envía esa lectura al servidor.
+`useDevice` elige "este computador", "esta tablet" o "este celular" para hablar de dónde viven los datos y para dibujar uno de los tres menús. No envía esa lectura al servidor.
 
-La interfaz usa `prefers-reduced-motion` en la entrada para no abrir la animación del loto cuando la persona lo pide.
+Si la persona pide menos movimiento, o si no hay WebGL, la entrada no monta la escena del loto: muestra una cortina corta con el botón Saltar. La escena tampoco se repite en la misma sesión del navegador. La carpeta de referencia `Loto` no está en la raíz del repositorio.
 
 ## Datos locales
 
-Dexie abre la base `oasis`, versión 1, con cinco tablas:
+Dexie abre la base `oasis`, versión 2. La versión 1 tenía el perfil, las marcas, las notas, las cápsulas y los contactos. La versión 2 añade el chat.
 
 | Tabla | Qué guarda |
 | --- | --- |
-| `profile` | Un solo registro, `id: "me"`. Nombre, modo de entrada, letra, lenguaje sencillo, última puerta y, si existe, la cuenta local. |
+| `profile` | Un solo registro, `id: "me"`. Nombre, modo de entrada, letra, tema, lenguaje sencillo, última puerta, el compañero y, si existe, la cuenta local. |
 | `marks` | Una marca por día: luminoso, en calma, regular, bajito o pesado. |
 | `notes` | Texto del diario y fecha. |
 | `capsules` | Nota y día en que se abre. |
 | `contacts` | Hasta dos personas de confianza, con nombre y teléfono. |
+| `messages` | Líneas del chat, de la persona o del compañero. El cliente conserva las 40 más recientes. |
+
+El compañero guarda `name`, `look` (`loto`, `isla`, `gota` o `bruma`) y `note`. El nombre por defecto es Loto. No es una ficha clínica.
 
 Los modos de entrada son `none`, `guest`, `google` y `local`. Salir pone `auth` en `none` y borra el nombre visible, pero no borra la cuenta ni el diario. `clearLocal` sí elimina la base.
 
@@ -72,15 +79,17 @@ La contraseña de la cuenta local no se guarda. `account.ts` deriva 256 bits con
 
 esbuild empaqueta `src/index.ts` en `dist/server.js` y deja sin empaquetar los paquetes de `node_modules`. Vite, con raíz en `client/`, escribe la interfaz en `client/dist`.
 
-Vite resuelve el alias `@modules` a `src/modules`. Así la agenda, el archivo `.ics` y el directorio se comparten entre la interfaz y la API sin duplicar el catálogo.
+Vite resuelve el alias `@modules` a `src/modules`. El `client/tsconfig.json` declara el mismo alias en `paths` y no usa `baseUrl`. Así la agenda, el archivo `.ics`, el directorio y las reglas del compañero se comparten entre la interfaz y la API sin duplicar el catálogo.
 
 ## Catálogos
 
 | Módulo | Qué decide |
 | --- | --- |
 | `directory/catalog.ts` | Tres fichas: Yo Te Escucho Villavicencio, Línea 106 y Línea 01 8000 931 089. Cada una trae teléfono, horario, frase para leer, fuente y fecha. |
-| `orientador/match.ts` | Elige una de esas fichas por palabras de la pregunta. Por defecto, Yo Te Escucho. El límite dice que no diagnostica ni recomienda tratamientos. |
-| `orientador/router.ts` | Si hay `GEMINI_API_KEY`, pide una sola frase corta. Descarta la respuesta si menciona diagnóstico, tratamiento, medicamento, dosis o suicidio, o si la llamada falla. |
+| `orientador/match.ts` | Elige una de esas fichas por palabras de la pregunta. Por defecto, Yo Te Escucho. El límite dice que no diagnostica ni recomienda tratamientos. El chat reutiliza esas reglas. |
+| `orientador/router.ts` | `POST /api/orientador`. Si hay `GEMINI_API_KEY`, pide una sola frase corta. Descarta la respuesta si menciona diagnóstico, tratamiento, medicamento, dosis o suicidio, o si la llamada falla. |
+| `companion/local.ts` | Respuesta del compañero sin red: saludo, límite clínico, ficha si piden ayuda, y descarte de teléfonos que no están en el catálogo. |
+| `companion/router.ts` | `POST /api/companion`. Parte de la respuesta local. Si hay llave, pide a Gemini como máximo dos frases y se queda con la local si la del modelo no pasa el filtro. |
 | `events/catalog.ts` | `realEvents` está vacío. La agenda muestra semillas marcadas `sample: true`, con categoría distracción, bienestar o lúdicas. Una publicación de la sala se suma como ejemplo. La semana se calcula con el `today` que envía el navegador. |
 | `bridge/whatsapp.ts` | Arma `https://wa.me/` en el dispositivo. No envía mensajes ni llama a la red. |
 | `metrics/aggregate.ts` | Suma la semilla sintética: visitas, tonos, ayuda, distracción y agenda. |
@@ -96,11 +105,12 @@ Los conteos `directory_open`, `call_click` y `help_offer` viven en memoria del p
 
 | Método y ruta | Cuerpo o consulta | Respuesta |
 | --- | --- | --- |
-| `GET /api/health` | | `{ "ok": true }` |
+| `GET /api/health` | | `{ "ok": true, "ops": "sin-configurar" \| "postgres" \| "no-disponible" }` |
 | `GET /api/directory` | | `{ "services": ServiceCard[] }` |
 | `GET /api/music/spotify` | | Playlist pública o vacía |
 | `GET /api/music/youtube` | | Playlist pública o vacía |
 | `POST /api/orientador` | `{ "question": string }` | `{ service, limit, intro }` |
+| `POST /api/companion` | `{ "message", "companionName"?, "note"?, "history"? }` | `{ reply, limit, service, reason }`. El historial se recorta a 8 turnos. No se guarda en el servidor |
 | `GET /api/events` | | Conteos anónimos de este proceso |
 | `GET /api/events/agenda` | `today=AAAA-MM-DD` | Ejemplos de esa semana, más actividades de Postgres si la base responde |
 | `POST /api/events` | `{ "type": "visit" \| "mood" \| "help" \| "distraction" \| "agenda" \| "directory_open" \| "call_click" \| "help_offer", "tone"? }` | `{ "ok": true }` o 400. El tono solo se acepta si es uno de los cinco de la marca |
@@ -119,9 +129,9 @@ Ninguna ruta exige sesión. La sesión solo existe en el navegador y decide qué
 | `npm run dev:web` | Vite. El proxy de `/api` apunta a `127.0.0.1:3000`. |
 | `npm run build` | `client/dist` más `dist/server.js`. |
 | `npm start` | `node dist/server.js`. |
-| `npm test` | Playlists, agenda, filtros, orientador, WhatsApp, semilla de métricas y voz. Postgres se omite sin `DATABASE_URL`. |
+| `npm test` | Playlists, agenda, filtros, orientador, WhatsApp, semilla, voz, compañero y pétalos. Postgres se omite sin `DATABASE_URL`. |
 
-El service worker de Workbox precachea estáticos y usa `index.html` como respaldo de navegación. Los HTML y el propio service worker se sirven con `Cache-Control: no-cache` para que un deploy nuevo pueda reemplazarlos.
+El service worker de Workbox precachea estáticos y usa `index.html` como respaldo de navegación. Los HTML y el propio service worker se sirven con `Cache-Control: no-cache` para que un deploy nuevo pueda reemplazarlos. El manifiesto pide `display: standalone` e incluye `favicon.svg`, `icon-192.png` e `icon-512.png`.
 
 ## Contenedor
 
@@ -144,4 +154,6 @@ El servicio `oasis` del workspace de Mariana despliega la rama `main` con runtim
 - El directorio es una lista cerrada con fuente y fecha, no un buscador de lugares.
 - La agenda prefiere mostrar ejemplos rotulados antes que inventar actividades.
 - El orientador elige primero por reglas y solo entonces, si hay llave, pide una frase. La frase no sustituye a la ficha oficial.
-- La voz no tiene un modelo propio. Si el navegador no ofrece reconocimiento, el botón no aparece.
+- El compañero hace lo mismo en el chat: la ficha sale de las reglas y Gemini solo puede cambiar la frase si pasa el filtro.
+- La voz no tiene un modelo propio. El primer toque pide el micrófono. Después, la escucha continua espera la palabra Oasis. Si el navegador no ofrece reconocimiento, el panel lo dice y el menú sigue usable.
+- Hay un menú por tipo de dispositivo: grilla, riel o barra.

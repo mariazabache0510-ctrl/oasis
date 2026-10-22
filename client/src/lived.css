@@ -111,6 +111,23 @@ html[data-theme="noche"] .oasis-card[data-tone="sky"] { background: #1e3344; --c
 html[data-theme="noche"] .oasis-card[data-tone="lilac"] { background: #2c3144; --c1: #4a3d62; --c2: #2c3144; }
 html[data-theme="noche"] .oasis-card[data-tone="mint"] { background: #1e3330; --c1: #2d5648; --c2: #1e3330; }
 html[data-theme="noche"] .oasis-card[data-tone="butter"] { background: #3a3424; --c1: #6a5a32; --c2: #3a3424; }
+html[data-theme="noche"] .oasis-card__orb {
+  background: radial-gradient(circle at 32% 28%, rgba(247, 241, 232, 0.16), rgba(247, 241, 232, 0) 68%);
+}
+html[data-theme="noche"] .oasis-card::after {
+  background: radial-gradient(circle, rgba(247, 241, 232, 0.14), rgba(247, 241, 232, 0) 65%);
+}
+html[data-theme="noche"] .mem-choice,
+html[data-theme="noche"] .mem-choice:hover,
+html[data-theme="noche"] .mem-choice[aria-pressed="true"] {
+  color: #2c261f;
+}
+html[data-theme="noche"] .mem-facts div {
+  background: rgba(247, 241, 232, 0.08);
+  box-shadow: none;
+}
+html[data-theme="noche"] .mem-facts dt { color: #d9cfc3; }
+html[data-theme="noche"] .mem-facts dd { color: #f7f1e8; }
 html[data-theme="noche"] .oasis-title,
 html[data-theme="noche"] .ph-word,
 html[data-theme="noche"] .ph-eyebrow-word,

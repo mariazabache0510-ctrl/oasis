@@ -15,6 +15,30 @@
   max-width: calc(100vw - 28px);
   pointer-events: none;
 }
+.voice-sheet {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  width: min(320px, calc(100vw - 28px));
+  margin: 0;
+  padding: 16px 42px 14px 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--cream) 94%, white);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+}
+.voice-sheet .voice-note,
+.voice-sheet .voice-hint {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  color: inherit;
+}
+.voice-note { font-size: 0.82rem; line-height: 1.35; }
+.voice-hint { font-weight: 800; line-height: 1.35; }
 .voice-note, .voice-card, .voice-arm {
   max-width: min(320px, calc(100vw - 28px));
   margin: 0;
@@ -24,7 +48,7 @@
   color: #3d3a46;
   box-shadow: var(--shadow);
 }
-.voice-note { font-size: 0.82rem; line-height: 1.35; }
+.voice-sheet .voice-arm { width: fit-content; }
 .voice-arm {
   border: 0;
   cursor: pointer;
@@ -144,6 +168,24 @@
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1.4);
 }
 .voice-x:hover { transform: scale(1.15) rotate(90deg); }
+
+html[data-theme="noche"] .voice-sheet,
+html[data-theme="noche"] .voice-toast {
+  color: #f7f1e8;
+  background: #243446;
+  border-color: rgba(247, 241, 232, 0.16);
+}
+html[data-theme="noche"] .voice-sheet .voice-note,
+html[data-theme="noche"] .voice-sheet .voice-hint,
+html[data-theme="noche"] .voice-sheet .voice-arm {
+  color: inherit;
+  background: none;
+  box-shadow: none;
+}
+html[data-theme="noche"] .voice-sheet .voice-arm {
+  background: rgba(247, 241, 232, 0.08);
+  padding: 10px 14px;
+}
 
 @media (max-width: 800px) {
   .voice { right: 14px; bottom: 96px; }
