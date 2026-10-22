@@ -3,7 +3,9 @@ import Dexie, { type Table } from "dexie"
 export type Tone = "luminoso" | "calma" | "regular" | "bajito" | "pesado"
 export type FontScale = "md" | "lg" | "xl"
 
-export type AuthMode = "none" | "guest" | "google"
+export type AuthMode = "none" | "guest" | "google" | "local"
+
+export type LocalAccount = { name: string; email: string; salt: string; hash: string; createdAt: number }
 
 export type Profile = {
   id: "me"
@@ -15,6 +17,7 @@ export type Profile = {
   lastOfferDay: string
   lastDoor: string
   returning: boolean
+  account?: LocalAccount
 }
 
 export type Mark = { id?: number; day: string; tone: Tone }

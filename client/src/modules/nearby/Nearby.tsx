@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 import { MapContainer, CircleMarker, TileLayer, useMap } from "react-leaflet"
 import { listServices, VILLAVICENCIO } from "@modules/directory/catalog"
 import { track } from "../shell/track"
+import { useDevice } from "../shell/device"
 import "leaflet/dist/leaflet.css"
 
 const plans = [
@@ -19,6 +20,7 @@ function Recenter({ position }: { position: [number, number] }) {
 }
 
 export function Nearby() {
+  const { here } = useDevice()
   const services = listServices()
   const [position, setPosition] = useState<[number, number]>([VILLAVICENCIO.lat, VILLAVICENCIO.lng])
   const [located, setLocated] = useState(false)
@@ -30,7 +32,7 @@ export function Nearby() {
 
   function locate() {
     if (!navigator.geolocation) {
-      setMessage("Este celular no compartió la ubicación. Las líneas siguen aquí.")
+      setMessage(`${here.charAt(0).toUpperCase()}${here.slice(1)} no compartió la ubicación. Las líneas siguen aquí.`)
       return
     }
     navigator.geolocation.getCurrentPosition(

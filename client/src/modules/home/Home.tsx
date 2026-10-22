@@ -3,12 +3,14 @@ import { Link } from "react-router-dom"
 import { todayKey, toneLabel, type Tone } from "../local-data/db"
 import { useOasis } from "../local-data/OasisProvider"
 import { track } from "../shell/track"
+import { useDevice } from "../shell/device"
 import { Leaves } from "./Leaves"
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 
 export function Home() {
   const { profile, todayMark, saveMark, setOfferDay } = useOasis()
+  const { here } = useDevice()
   const [install, setInstall] = useState<BeforeInstallPromptEvent | null>(null)
   const low = todayMark && (todayMark.tone === "bajito" || todayMark.tone === "pesado")
   const showOffer = Boolean(low && profile.lastOfferDay !== todayKey())
@@ -37,7 +39,7 @@ export function Home() {
         <Leaves />
         <h2>¿Cómo vas hoy?</h2>
         <p className="muted">
-          Un toque para que tú recuerdes cómo iba el día. Solo se guarda en este celular. No es una evaluación y no la ve nadie. Si marcas bajito o pesado, Oasis te ofrece una sola vez ver a quién llamar.
+          Un toque para que tú recuerdes cómo iba el día. Solo se guarda en {here}. No es una evaluación y no la ve nadie. Si marcas bajito o pesado, Oasis te ofrece una sola vez ver a quién llamar.
         </p>
         <div className="row">
           {tones.map((tone) => (
@@ -90,7 +92,7 @@ export function Home() {
 
       {install ? (
         <button className="btn btn-sage" type="button" onClick={() => void install.prompt()}>
-          Instalar Oasis en este celular
+          Instalar Oasis en {here}
         </button>
       ) : null}
     </>

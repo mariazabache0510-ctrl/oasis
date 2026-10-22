@@ -9,6 +9,7 @@ import { Memory } from "./modules/memory/Memory"
 import { OasisProvider, useOasis } from "./modules/local-data/OasisProvider"
 import { Shell } from "./modules/shell/Shell"
 import { Water } from "./modules/shell/Water"
+import { useDevice } from "./modules/shell/device"
 
 function FrontDoor() {
   const { profile, ready } = useOasis()
@@ -24,9 +25,15 @@ function PrivateShell() {
   return <Shell />
 }
 
+function DeviceWatcher() {
+  useDevice()
+  return null
+}
+
 export function App() {
   return (
     <OasisProvider>
+      <DeviceWatcher />
       <Water />
       <BrowserRouter>
         <Routes>

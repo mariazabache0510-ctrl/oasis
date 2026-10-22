@@ -3,6 +3,7 @@ import { Link } from "react-router-dom"
 import { services, SOURCE, SOURCE_DATE } from "@modules/directory/catalog"
 import { toneLabel, type Tone } from "../local-data/db"
 import { Leaves } from "./Leaves"
+import { useDevice } from "../shell/device"
 import { BubblesIcon, CapsuleIcon, HugIcon, JournalIcon, PhoneIcon } from "./Icons"
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
@@ -39,6 +40,7 @@ function SectionTitle({ eyebrow, children, as: Tag = "h2" }: { eyebrow: string; 
 
 export function Landing() {
   const [preview, setPreview] = useState<Tone | null>(null)
+  const { here } = useDevice()
   const root = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -95,7 +97,7 @@ export function Landing() {
         <section className="hero" id="inicio">
           <SectionTitle eyebrow="Un espacio tuyo" as="h1">Qué bueno que estés aquí.</SectionTitle>
           <p className="lede">
-            Aquí está la información de Oasis, sin cuenta. Si te registras, el espacio se parte en secciones y guarda solo en este celular tu nombre, tu marca del día, el diario y tus contactos.
+            Aquí está la información de Oasis, sin cuenta. Si te registras, el espacio se parte en secciones y guarda solo en {here} tu nombre, tu marca del día, el diario y tus contactos.
           </p>
         </section>
 
@@ -120,7 +122,7 @@ export function Landing() {
           </div>
           {preview ? (
             <p className="muted">
-              Marcaste {toneLabel[preview]}. Eso todavía no se guarda. El registro lo deja en este celular y abre el resto de Oasis.
+              Marcaste {toneLabel[preview]}. Eso todavía no se guarda. El registro lo deja en {here} y abre el resto de Oasis.
             </p>
           ) : null}
         </section>
@@ -176,7 +178,7 @@ export function Landing() {
           <SectionTitle eyebrow="Rincón">Lo que se abre con el registro</SectionTitle>
           <div className="info-grid">
             {[
-              { key: "diario", cls: "tile-mintleaf", icon: <JournalIcon />, title: "Diario", text: "Un lugar para escribir. El texto se queda en este celular." },
+              { key: "diario", cls: "tile-mintleaf", icon: <JournalIcon />, title: "Diario", text: `Un lugar para escribir. El texto se queda en ${here}.` },
               { key: "distraccion", cls: "tile-butter", icon: <BubblesIcon />, title: "Distracción", text: "Una lectura corta, burbujas sin puntaje y música, si está conectada." },
               { key: "capsula", cls: "tile-lilac", icon: <CapsuleIcon />, title: "Cápsula", text: "Una nota para tu yo de después. Tú eliges el día en que se abre." },
             ].map((item, index) => (

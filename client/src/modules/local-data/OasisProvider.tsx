@@ -11,6 +11,7 @@ import {
   type Tone,
   type TrustContact,
 } from "./db"
+import { hashPassword, newSalt, sameHash } from "./account"
 
 type OasisContextValue = {
   ready: boolean
@@ -36,7 +37,11 @@ type OasisContextValue = {
   signInGuest: (name: string) => Promise<void>
   signInGoogle: (name: string, email: string) => Promise<void>
   signOut: () => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<AuthResult>
+  login: (email: string, password: string) => Promise<AuthResult>
 }
+
+export type AuthResult = { ok: true } | { ok: false; message: string }
 
 const OasisContext = createContext<OasisContextValue | null>(null)
 
@@ -145,6 +150,33 @@ export function OasisProvider({ children }: { children: ReactNode }) {
       signInGuest: (name) => updateProfile({ auth: "guest", name: name.trim(), email: "", returning: true }),
       signInGoogle: (name, email) => updateProfile({ auth: "google", name: name.trim(), email: email.trim(), returning: true }),
       signOut: () => updateProfile({ auth: "none", name: "", email: "" }),
+      register: async (name, email, password) => {
+        const cleanEmail = email.trim().toLowerCase()
+        if (profileRef.current.account) return { ok: false, message: "Ya hay una cuenta en este dispositivo. Entra con ella en la pestaña Ya tengo cuenta." }
+        try {
+          const salt = newSalt()
+          const hash = await hashPassword(password, salt)
+          const account = { name: name.trim(), email: cleanEmail, salt, hash, createdAt: Date.now() }
+          await updateProfile({ auth: "local", name: account.name, email: cleanEmail, returning: true, account })
+          return { ok: true }
+        } catch {
+          return { ok: false, message: "Este navegador no permite guardar la clave de forma segura. Prueba con la dirección https del sitio." }
+        }
+      },
+      login: async (email, password) => {
+        const account = profileRef.current.account
+        if (!account) return { ok: false, message: "Todavía no hay una cuenta en este dispositivo. Puedes registrarte." }
+        try {
+          const hash = await hashPassword(password, account.salt)
+          if (account.email !== email.trim().toLowerCase() || !sameHash(hash, account.hash)) {
+            return { ok: false, message: "El correo o la clave no coinciden." }
+          }
+          await updateProfile({ auth: "local", name: account.name, email: account.email, returning: true })
+          return { ok: true }
+        } catch {
+          return { ok: false, message: "Este navegador no pudo comprobar la clave. Prueba con la dirección https del sitio." }
+        }
+      },
       clearLocal: async () => {
         await db.delete()
         await db.open()

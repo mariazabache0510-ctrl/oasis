@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react"
 import { todayKey, toneLabel, type Tone } from "../local-data/db"
 import { useOasis } from "../local-data/OasisProvider"
+import { useDevice } from "../shell/device"
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 const heights: Record<Tone, string> = {
@@ -16,6 +17,7 @@ type Tab = "escribir" | "distraer" | "capsula" | "marca"
 
 export function Corner() {
   const oasis = useOasis()
+  const { here } = useDevice()
   const [tab, setTab] = useState<Tab>("escribir")
   const [note, setNote] = useState("")
   const [capsule, setCapsule] = useState("")
@@ -68,7 +70,7 @@ export function Corner() {
               setNote("")
             }}
           >
-            Guardar en este celular
+            Guardar en {here}
           </button>
           {oasis.notes.map((item) => (
             <article className="card" key={item.id}>

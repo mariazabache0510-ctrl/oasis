@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
 import type { FontScale } from "../local-data/db"
+import { useDevice } from "../shell/device"
 
 const scales: { id: FontScale; label: string }[] = [
   { id: "md", label: "Letra cómoda" },
@@ -11,9 +12,12 @@ const scales: { id: FontScale; label: string }[] = [
 export function Memory() {
   const oasis = useOasis()
   const navigate = useNavigate()
+  const { here } = useDevice()
   const session = oasis.profile.auth === "google"
-    ? `Entraste con Google${oasis.profile.email ? ` · ${oasis.profile.email}` : ""}. Ese dato está solo en este celular.`
-    : oasis.profile.auth === "guest"
+    ? `Entraste con Google${oasis.profile.email ? ` · ${oasis.profile.email}` : ""}. Ese dato está solo en ${here}.`
+    : oasis.profile.auth === "local"
+      ? `Entraste con tu cuenta${oasis.profile.email ? ` · ${oasis.profile.email}` : ""}. La clave solo existe como huella en ${here}.`
+      : oasis.profile.auth === "guest"
       ? "Entraste sin cuenta."
       : "Todavía no hay una entrada guardada."
   return (
@@ -21,7 +25,7 @@ export function Memory() {
       <section className="hero">
         <p className="eyebrow">Lo que recuerdo de ti</p>
         <h1>Puedes verlo y puedes borrarlo.</h1>
-        <p className="lede">El nombre, la letra y la última puerta. El diario no sale de este celular y no lo leo yo.</p>
+        <p className="lede">El nombre, la letra y la última puerta. El diario no sale de {here} y no lo leo yo.</p>
       </section>
       <section className="panel">
         <p>{session}</p>
@@ -42,7 +46,7 @@ export function Memory() {
           Cerrar esta entrada
         </button>
         <button className="btn btn-ghost" type="button" onClick={() => void oasis.clearLocal()}>
-          Borrar lo que está en este celular
+          Borrar lo que está en {here}
         </button>
       </section>
     </>
