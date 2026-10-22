@@ -1,0 +1,68 @@
+/* ---------- Inicio ---------- */
+.mood-card { padding: 30px; gap: 14px; }
+.mood-row { display: flex; flex-wrap: wrap; gap: 12px; }
+.mood {
+  --m1: #fff;
+  --m2: #eee;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  min-height: 54px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--m1), var(--m2));
+  box-shadow: 0 8px 18px rgba(92, 70, 58, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1.4), box-shadow 0.35s ease;
+  animation: oasis-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  animation-delay: calc(var(--k, 0) * 80ms + 200ms);
+}
+.mood::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -40%;
+  width: 38%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+  transform: translateX(-180%) skewX(-18deg);
+  pointer-events: none;
+}
+.mood:hover, .mood:focus-visible { transform: translateY(-5px) scale(1.07) rotate(-1deg); box-shadow: 0 16px 28px rgba(92, 70, 58, 0.18), inset 0 1px 0 #fff; }
+.mood:hover::after, .mood:focus-visible::after { animation: sheen 0.9s ease; }
+.mood:focus-visible { outline: 3px solid #3d3a46; outline-offset: 3px; }
+.mood:active { transform: scale(0.96); }
+.mood[aria-pressed="true"] {
+  transform: scale(1.06);
+  box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--m2), 0 16px 30px rgba(92, 70, 58, 0.2);
+}
+.mood[aria-pressed="true"]::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: #3d3a46;
+  vertical-align: middle;
+  animation: mood-dot 1.8s ease-in-out infinite;
+}
+.mood[data-tone="luminoso"] { --m1: #fff3c4; --m2: #f7d77f; }
+.mood[data-tone="calma"] { --m1: #dff3e8; --m2: #a9d6b9; }
+.mood[data-tone="regular"] { --m1: #e6f3fb; --m2: #a9d2ec; }
+.mood[data-tone="bajito"] { --m1: #efe5fa; --m2: #cdb6ea; }
+.mood[data-tone="pesado"] { --m1: #f9e1d4; --m2: #e8b4a0; }
+.mood-saved {
+  width: fit-content;
+  padding: 10px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.78);
+  animation: oasis-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+.home-doors { gap: 22px; }
+.door-card { min-height: 260px; gap: 10px; padding: 28px; }
+.door-card .tile-badge { margin-bottom: 6px; }
+.door-card h2.oasis-title { font-size: clamp(1.6rem, 2.6vw, 2.1rem); }
+.door-card p { max-width: 30ch; }
+.door-card .oasis-go { margin-top: auto; }
+
