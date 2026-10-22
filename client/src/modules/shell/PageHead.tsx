@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties } from "react"
+import { Fragment, type CSSProperties, type ReactNode } from "react"
 import { usePointerGlow } from "./usePointerGlow"
 
 type Props = {
@@ -11,9 +11,11 @@ type Props = {
   featured?: boolean
   /** Subrayado que se dibuja solo bajo el texto grande de arriba. Úsalo con `featured`. */
   underline?: boolean
+  /** Ícono pequeño que reemplaza el punto brillante junto al texto de arriba. */
+  icon?: ReactNode
 }
 
-export function PageHead({ eyebrow, title, accent, lede, featured = false, underline = false }: Props) {
+export function PageHead({ eyebrow, title, accent, lede, featured = false, underline = false, icon }: Props) {
   const glow = usePointerGlow<HTMLElement>()
   const titleWords = [
     ...title.split(" ").filter(Boolean).map((text) => ({ text, accent: false })),
@@ -26,8 +28,8 @@ export function PageHead({ eyebrow, title, accent, lede, featured = false, under
       <p className="ph-eyebrow">
         <span className="ph-glow ph-glow--a" aria-hidden="true" />
         <span className="ph-glow ph-glow--b" aria-hidden="true" />
-        <span className="ph-spark" aria-hidden="true">
-          <i />
+        <span className={icon ? "ph-spark ph-spark--icon" : "ph-spark"} aria-hidden="true">
+          {icon ?? <i />}
         </span>
         <span className="ph-eyebrow-text">
           {eyebrowWords.map((word, index) => (

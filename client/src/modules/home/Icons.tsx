@@ -199,3 +199,25 @@ export function CalendarIcon() {
     </svg>
   )
 }
+
+/** Teléfono sólido de un solo trazo. Toma el color del texto (currentColor). */
+export function PhoneGlyph({ className = "line-btn-icon line-btn-phone" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"
+        fill="currentColor"
+      />
+    </svg>
+  )
+}
+
+/** Dos hojas superpuestas: copiar. */
+export function CopyGlyph() {
+  return (
+    <svg className="line-btn-icon line-btn-copy" viewBox="0 0 24 24" aria-hidden="true">
+      <rect className="copy-back" x="8" y="3" width="12" height="14" rx="3" fill="none" stroke="currentColor" strokeWidth="2" />
+      <rect className="copy-front" x="4" y="7" width="12" height="14" rx="3" fill="#fff" fillOpacity="0.7" stroke="currentColor" strokeWidth="2" />
+    </svg>
+  )
+}

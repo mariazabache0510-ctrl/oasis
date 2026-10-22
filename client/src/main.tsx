@@ -10,6 +10,7 @@ import "./home.css"
 import "./nearby.css"
 import "./corner.css"
 import "./memory.css"
+import "./talk.css"
 import "./responsive.css"
 
 createRoot(document.getElementById("root")!).render(
