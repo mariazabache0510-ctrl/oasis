@@ -7,6 +7,7 @@ import { App } from "./App"
 import "./styles.css"
 import "./pages.css"
 import "./home.css"
+import "./nearby.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
