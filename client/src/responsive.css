@@ -1,0 +1,4 @@
+/* Se carga al final para que gane a los paddings propios de cada sección en pantallas chicas. */
+@media (max-width: 560px) {
+  .oasis-card { padding: 22px; border-radius: 26px; }
+}

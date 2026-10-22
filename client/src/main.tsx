@@ -9,6 +9,8 @@ import "./pages.css"
 import "./home.css"
 import "./nearby.css"
 import "./corner.css"
+import "./memory.css"
+import "./responsive.css"
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

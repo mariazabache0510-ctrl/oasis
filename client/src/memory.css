@@ -1,0 +1,57 @@
+/* ---------- Lo que recuerdo de ti ---------- */
+.mem-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); max-width: 980px; }
+.mem-wide { grid-column: 1 / -1; }
+.mem-card { gap: 14px; padding: 28px; }
+.mem-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin: 4px 0 0; }
+.mem-facts div { padding: 14px 18px; border-radius: 20px; background: rgba(255, 255, 255, 0.72); box-shadow: 0 8px 18px rgba(92, 70, 58, 0.08); }
+.mem-facts dt { font-size: 0.74rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); }
+.mem-facts dd { margin: 4px 0 0; font-family: Fraunces, serif; font-size: 1.25rem; overflow-wrap: anywhere; }
+.mem-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 20px; }
+.mem-stat { gap: 6px; padding: 22px; justify-items: start; }
+.mem-stat-icon { width: 56px; height: 56px; border-radius: 18px; }
+.mem-stat-icon .tile-icon { width: 38px; height: 38px; }
+.mem-num {
+  width: fit-content;
+  padding-bottom: 0.06em;
+  font-family: Fraunces, serif;
+  font-size: clamp(2.6rem, 8vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  background: linear-gradient(110deg, #d9694a, #b0508f 45%, #6c4fb3 80%);
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  animation: brand-flow 8s ease-in-out infinite;
+  transition: translate 0.4s cubic-bezier(0.2, 0.8, 0.2, 1.4);
+}
+.mem-stat:hover .mem-num { translate: 6px 0; }
+.mem-label { font-weight: 700; color: #3d3a46 !important; }
+.mem-scales { display: flex; flex-wrap: wrap; gap: 8px; }
+.mem-choice {
+  min-height: 46px;
+  padding: 0 18px;
+  border: 1px solid rgba(61, 58, 70, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  font: 700 0.95rem/1 Nunito, sans-serif;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1.4), background 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.mem-choice:hover { transform: translateY(-3px) scale(1.04); background: #fff; box-shadow: 0 10px 20px rgba(92, 70, 58, 0.14); }
+.mem-choice:active { transform: scale(0.96); }
+.mem-choice:focus-visible { outline: 3px solid #4a3f8f; outline-offset: 3px; }
+.mem-choice[aria-pressed="true"] { background: linear-gradient(120deg, #f6cdb6, #e4d4f4); border-color: #8a63d9; box-shadow: 0 10px 20px rgba(138, 99, 217, 0.2); }
+.mem-card .btn { justify-self: start; }
+.mem-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.mem-danger:hover, .mem-danger:focus-visible { background: #fde3d3; border-color: #e58b6d; }
+
+@media (max-width: 560px) {
+  .mem-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .mem-stat { padding: 14px; }
+  .mem-stat-icon { width: 44px; height: 44px; border-radius: 14px; }
+  .mem-stat-icon .tile-icon { width: 30px; height: 30px; }
+  .mem-label { font-size: 0.82rem; }
+  .mem-card { padding: 22px; }
+}
