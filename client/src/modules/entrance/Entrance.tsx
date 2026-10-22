@@ -4,17 +4,23 @@ import { useOasis } from "../local-data/OasisProvider"
 import { PhraseCarousel } from "./PhraseCarousel"
 import { PopField } from "./PopField"
 import { useDevice } from "../shell/device"
+import { lotusSeenThisSession, markLotusSeen, prefersReducedMotion, resetLotusClock, webglAvailable } from "./lotusMotion"
 
-const LotusOpening = lazy(() => import("./LotusOpening"))
+const LotusIntro = lazy(() => import("./LotusIntro"))
 const IslandScene = lazy(() => import("./IslandScene"))
 
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class SceneBoundary extends Component<{ children: ReactNode; onFail?: () => void }, { failed: boolean }> {
   state = { failed: false }
   static getDerivedStateFromError() {
     return { failed: true }
   }
+  componentDidCatch() {
+    this.props.onFail?.()
+  }
   render() {
-    if (this.state.failed) return null
+    if (this.state.failed) {
+      return this.props.onFail ? <div className="lotus-screen lotus-fade" role="status" aria-label="Abriendo Oasis" /> : null
+    }
     return this.props.children
   }
 }
@@ -71,9 +77,25 @@ export function Entrance() {
   const onGoogle = useRef<(credential: string) => void>(() => undefined)
   const googleSlot = useRef<HTMLDivElement>(null)
 
+  useEffect(() => {
+    if (lotusSeenThisSession()) return
+    void import("./LotusIntro")
+    if (!prefersReducedMotion() && webglAvailable()) void import("./LotusStage")
+  }, [])
+
+  function openHome() {
+    if (lotusSeenThisSession()) {
+      window.setTimeout(() => navigate("/inicio"), 0)
+      return
+    }
+    markLotusSeen()
+    resetLotusClock()
+    setOpening(true)
+  }
+
   onGoogle.current = (credential) => {
     const person = readGoogleName(credential)
-    void signInGoogle(person.given_name || person.name || "", person.email || "").then(() => setOpening(true))
+    void signInGoogle(person.given_name || person.name || "", person.email || "").then(() => openHome())
   }
 
   useEffect(() => {
@@ -129,13 +151,13 @@ export function Entrance() {
     setBusy(true)
     const result = mode === "register" ? await register(name, email, password) : await login(email, password)
     setBusy(false)
-    if (result.ok) setOpening(true)
+    if (result.ok) openHome()
     else setError(result.message)
   }
 
   async function enterWithoutAccount() {
     await signInGuest(name)
-    setOpening(true)
+    openHome()
   }
 
   async function forgot() {
@@ -150,14 +172,16 @@ export function Entrance() {
   const score = strength(password)
 
   return (
-    <section className="entrance">
+    <section className={opening ? "entrance is-opening" : "entrance"}>
       <PopField />
       {opening ? (
-        <Suspense fallback={<div className="lotus-screen" role="status" aria-label="Abriendo Oasis" />}>
-          <LotusOpening onDone={() => navigate("/inicio")} />
-        </Suspense>
+        <SceneBoundary onFail={() => navigate("/inicio")}>
+          <Suspense fallback={<div className="lotus-screen" role="status" aria-label="Abriendo Oasis"><p className="lotus-mark is-in">Oasis</p></div>}>
+            <LotusIntro onDone={() => navigate("/inicio")} />
+          </Suspense>
+        </SceneBoundary>
       ) : null}
-      <div className="login-split">
+      <div className="login-split" aria-hidden={opening || undefined} inert={opening || undefined}>
         <div className="login-left">
           <div className="enter-card auth-card">
             <span className="auth-glow" aria-hidden="true" />
@@ -262,7 +286,7 @@ export function Entrance() {
           </header>
           <div className="login-scene" aria-hidden="true">
             <div className="login-scene-fallback" />
-            {motionOk ? (
+            {motionOk && !opening ? (
               <SceneBoundary>
                 <Suspense fallback={null}>
                   <IslandScene />

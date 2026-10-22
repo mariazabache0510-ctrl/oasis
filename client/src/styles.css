@@ -294,6 +294,13 @@ textarea { min-height: 120px; resize: vertical; }
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr);
   gap: 28px;
   align-items: stretch;
+  transition: opacity 0.6s ease, transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.6s ease;
+}
+.entrance.is-opening .login-split {
+  opacity: 0;
+  transform: translateY(-22px);
+  filter: blur(2px);
+  pointer-events: none;
 }
 .login-left { position: relative; display: grid; place-items: center; padding: 12px; }
 .enter-card {
@@ -661,23 +668,107 @@ textarea { min-height: 120px; resize: vertical; }
 .lotus-screen {
   position: fixed;
   inset: 0;
-  z-index: 8;
-  background: var(--cream);
+  z-index: 30;
+  background: transparent;
+  pointer-events: none;
 }
-.lotus-screen canvas { width: 100% !important; height: 100% !important; }
-.lotus-caption {
+.lotus-screen canvas { width: 100% !important; height: 100% !important; display: block; }
+.lotus-backdrop,
+.lotus-stage,
+.lotus-flash,
+.lotus-mark,
+.lotus-skip { pointer-events: none; }
+.lotus-skip { pointer-events: auto; }
+.lotus-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 38%, #fbf6ee 0%, #f7f1e8 46%, #f4ece1 100%);
+}
+.lotus-stage { position: absolute; inset: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .lotus-backdrop {
+    opacity: 0;
+    animation: lotus-fade-in 0.7s ease forwards;
+  }
+  .lotus-backdrop.is-shown { opacity: 1; animation: none; }
+  .lotus-stage {
+    opacity: 0;
+    animation: lotus-fade-in 0.85s ease 0.06s forwards;
+  }
+}
+.lotus-mark {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 12%;
+  bottom: 11%;
+  z-index: 2;
+  margin: 0;
   text-align: center;
   font-family: Fraunces, serif;
-  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
   letter-spacing: -0.04em;
-  background: linear-gradient(120deg, #6d9a7c, #6f9eb5, #9a84ae, #c48974);
+  line-height: 1;
+  opacity: 0;
+  background: linear-gradient(120deg, #6d9a7c, #6f9eb5 38%, #9a84ae 68%, #c48974);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+}
+.lotus-mark.is-in { opacity: 1; }
+.lotus-glow,
+.lotus-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.lotus-glow {
+  z-index: 2;
+  background: radial-gradient(circle at 50% 46%, rgba(255, 248, 220, 0.95) 0%, rgba(255, 236, 190, 0.45) 16%, rgba(255, 250, 244, 0) 46%);
+}
+.lotus-flash {
+  z-index: 3;
+  background: radial-gradient(circle at 50% 46%, #fffdf8 0%, rgba(251, 246, 238, 0.98) 40%, rgba(248, 231, 176, 0.96) 100%);
+}
+.lotus-skip {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  z-index: 4;
+  border: 0;
+  cursor: pointer;
+  font-family: Nunito, sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 0 18px;
+  box-shadow: var(--shadow);
+}
+.lotus-skip:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.lotus-fade {
+  background: radial-gradient(circle at 50% 42%, #fffdf8 0%, var(--cream) 58%, var(--cream-deep) 100%);
+  pointer-events: auto;
+}
+.lotus-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 46%, #fffdf8 0%, #fbf6ee 48%, #f8e7b0 130%);
+}
+html.oasis-arriving .app-frame {
+  animation: oasis-arrive 0.75s cubic-bezier(0.16, 0.84, 0.32, 1) both;
+}
+@keyframes lotus-fade-in {
+  to { opacity: 1; }
+}
+@keyframes oasis-arrive {
+  from { transform: translateY(16px); }
+  to { transform: none; }
 }
 @keyframes brand-flow {
   0%, 100% { background-position: 0% 50%; }
