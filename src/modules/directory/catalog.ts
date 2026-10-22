@@ -74,6 +74,47 @@ export const services: ServiceCard[] = [
 
 export const VILLAVICENCIO = { lat: 4.142, lng: -73.6266, label: "Villavicencio" }
 
+export type ExamplePoint = {
+  id: string
+  lat: number
+  lng: number
+  label: string
+  note: string
+  sample: true
+}
+
+/** Puntos ficticios. No son consultorios ni canales verificados. */
+export const examplePoints: ExamplePoint[] = [
+  {
+    id: "ejemplo-parque",
+    lat: 4.1522,
+    lng: -73.637,
+    label: "Parque de ejemplo",
+    note: "Punto ficticio para orientar el mapa. No es un servicio de salud ni un lugar confirmado.",
+    sample: true,
+  },
+  {
+    id: "ejemplo-biblioteca",
+    lat: 4.135,
+    lng: -73.618,
+    label: "Biblioteca de ejemplo",
+    note: "Punto ficticio. No es un canal verificado.",
+    sample: true,
+  },
+]
+
+export function inactiveChannelNote(service: ServiceCard, observedOn: string): string {
+  return [
+    "Aviso de canal inactivo",
+    `Línea: ${service.name}`,
+    `Teléfono publicado: ${service.phone}`,
+    `Fuente: ${service.source}`,
+    `Fecha de consulta de la fuente: ${service.sourceDate}`,
+    `Observación: no respondió el ${observedOn}.`,
+    "Sin datos de una persona. No reemplazar el número sin una fuente nueva y su fecha.",
+  ].join("\n")
+}
+
 export function listServices(): ServiceCard[] {
   return services
 }

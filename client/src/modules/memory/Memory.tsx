@@ -4,6 +4,7 @@ import type { FontScale } from "../local-data/db"
 import { useDevice } from "../shell/device"
 import { OasisCard } from "../shell/OasisCard"
 import { PageHead } from "../shell/PageHead"
+import { CompanionSetup } from "../talk/CompanionSetup"
 import { CapsuleIcon, HeartIcon, JournalIcon, LockIcon } from "../home/Icons"
 
 const doors: Record<string, string> = {
@@ -46,6 +47,8 @@ export function Memory() {
         accent="puedes borrarlo."
         lede={`El nombre, la letra y la última puerta. El diario no sale de ${here} y no lo leo yo.`}
       />
+
+      <CompanionSetup />
 
       <div className="mem-grid">
         <div className="tile-float mem-wide">
@@ -101,6 +104,9 @@ export function Memory() {
             </div>
             <button className="btn btn-butter" type="button" aria-pressed={oasis.profile.simpleLanguage} onClick={() => void oasis.setSimpleLanguage(!oasis.profile.simpleLanguage)}>
               {oasis.profile.simpleLanguage ? "Lenguaje sencillo activo" : "Usar lenguaje sencillo"}
+            </button>
+            <button className="btn btn-ghost" type="button" aria-pressed={oasis.profile.theme === "noche"} onClick={() => void oasis.setTheme(oasis.profile.theme === "noche" ? "dia" : "noche")}>
+              {oasis.profile.theme === "noche" ? "Modo noche activo" : "Usar modo noche"}
             </button>
           </OasisCard>
         </div>

@@ -7,11 +7,16 @@ import {
   type FontScale,
   type Mark,
   type Note,
+  type ChatLine,
+  type CompanionSettings,
   type Profile,
+  type ThemeMode,
   type Tone,
   type TrustContact,
+  defaultCompanion,
 } from "./db"
 import { hashPassword, newSalt, sameHash } from "./account"
+import { track } from "../shell/track"
 
 type OasisContextValue = {
   ready: boolean
@@ -23,6 +28,7 @@ type OasisContextValue = {
   todayMark?: Mark
   setName: (name: string) => Promise<void>
   setFontScale: (fontScale: FontScale) => Promise<void>
+  setTheme: (theme: ThemeMode) => Promise<void>
   setSimpleLanguage: (simpleLanguage: boolean) => Promise<void>
   setLastDoor: (lastDoor: string) => Promise<void>
   setOfferDay: (day: string) => Promise<void>
@@ -33,6 +39,9 @@ type OasisContextValue = {
   deleteCapsule: (id: number) => Promise<void>
   addContact: (name: string, phone: string) => Promise<void>
   deleteContact: (id: number) => Promise<void>
+  messages: ChatLine[]
+  setCompanion: (patch: Partial<CompanionSettings>) => Promise<void>
+  addMessage: (line: ChatLine) => Promise<void>
   clearLocal: () => Promise<void>
   signInGuest: (name: string) => Promise<void>
   signInGoogle: (name: string, email: string) => Promise<void>
@@ -45,20 +54,37 @@ export type AuthResult = { ok: true } | { ok: false; message: string }
 
 const OasisContext = createContext<OasisContextValue | null>(null)
 
+function initialTheme(): ThemeMode {
+  try {
+    const saved = localStorage.getItem("oasis-theme")
+    if (saved === "noche" || saved === "dia") return saved
+  } catch {
+    /* el navegador puede bloquear el almacenamiento */
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "noche" : "dia"
+}
+
+function withTheme(profile: Profile | undefined): Profile {
+  const theme = profile?.theme === "noche" || profile?.theme === "dia" ? profile.theme : initialTheme()
+  return { ...emptyProfile, ...(profile ?? {}), theme }
+}
+
 async function loadAll() {
-  const [profile, marks, notes, capsules, contacts] = await Promise.all([
+  const [profile, marks, notes, capsules, contacts, messages] = await Promise.all([
     db.profile.get("me"),
     db.marks.orderBy("day").toArray(),
     db.notes.orderBy("createdAt").reverse().toArray(),
     db.capsules.orderBy("openOn").toArray(),
     db.contacts.toArray(),
+    db.messages.orderBy("createdAt").toArray(),
   ])
   return {
-    profile: { ...emptyProfile, ...(profile ?? {}) },
+    profile: withTheme(profile),
     marks,
     notes,
     capsules,
     contacts,
+    messages,
   }
 }
 
@@ -69,6 +95,7 @@ export function OasisProvider({ children }: { children: ReactNode }) {
   const [notes, setNotes] = useState<Note[]>([])
   const [capsules, setCapsules] = useState<Capsule[]>([])
   const [contacts, setContacts] = useState<TrustContact[]>([])
+  const [messages, setMessages] = useState<ChatLine[]>([])
   const profileRef = useRef(emptyProfile)
   const revision = useRef(0)
 
@@ -79,6 +106,7 @@ export function OasisProvider({ children }: { children: ReactNode }) {
     setNotes(next.notes)
     setCapsules(next.capsules)
     setContacts(next.contacts)
+    setMessages(next.messages)
     if (revision.current !== started) return
     profileRef.current = next.profile
     setProfile(next.profile)
@@ -93,6 +121,15 @@ export function OasisProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.font = profile.fontScale
   }, [profile.fontScale])
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = profile.theme
+    try {
+      localStorage.setItem("oasis-theme", profile.theme)
+    } catch {
+      /* sigue en esta visita */
+    }
+  }, [profile.theme])
 
   async function updateProfile(patch: Partial<Profile>) {
     revision.current += 1
@@ -110,9 +147,21 @@ export function OasisProvider({ children }: { children: ReactNode }) {
       notes,
       capsules,
       contacts,
+      messages,
+      setCompanion: (patch) => updateProfile({ companion: { ...defaultCompanion, ...profileRef.current.companion, ...patch } }),
+      addMessage: async (line) => {
+        await db.messages.add(line)
+        const all = await db.messages.orderBy("createdAt").toArray()
+        const overflow = all.length - 40
+        if (overflow > 0) {
+          await Promise.all(all.slice(0, overflow).map((row) => (row.id ? db.messages.delete(row.id) : Promise.resolve())))
+        }
+        await refresh()
+      },
       todayMark: marks.find((mark) => mark.day === today),
       setName: (name) => updateProfile({ name: name.trim() }),
       setFontScale: (fontScale) => updateProfile({ fontScale }),
+      setTheme: (theme) => updateProfile({ theme }),
       setSimpleLanguage: (simpleLanguage) => updateProfile({ simpleLanguage }),
       setLastDoor: (lastDoor) => updateProfile({ lastDoor }),
       setOfferDay: (day) => updateProfile({ lastOfferDay: day }),
@@ -121,6 +170,7 @@ export function OasisProvider({ children }: { children: ReactNode }) {
         if (existing?.id) await db.marks.update(existing.id, { tone })
         else await db.marks.add({ day: today, tone })
         await refresh()
+        track("mood", { tone })
       },
       addNote: async (text) => {
         await db.notes.add({ text, createdAt: Date.now() })
@@ -186,6 +236,7 @@ export function OasisProvider({ children }: { children: ReactNode }) {
         setNotes([])
         setCapsules([])
         setContacts([])
+        setMessages([])
       },
   }
 

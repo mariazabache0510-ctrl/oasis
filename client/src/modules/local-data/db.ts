@@ -2,10 +2,33 @@ import Dexie, { type Table } from "dexie"
 
 export type Tone = "luminoso" | "calma" | "regular" | "bajito" | "pesado"
 export type FontScale = "md" | "lg" | "xl"
+export type ThemeMode = "dia" | "noche"
 
 export type AuthMode = "none" | "guest" | "google" | "local"
 
 export type LocalAccount = { name: string; email: string; salt: string; hash: string; createdAt: number }
+
+export type CompanionLook = "loto" | "isla" | "gota" | "bruma"
+
+export type CompanionSettings = {
+  name: string
+  look: CompanionLook
+  note: string
+}
+
+export type ChatLine = {
+  id?: number
+  role: "person" | "companion"
+  text: string
+  createdAt: number
+  serviceId?: string
+}
+
+export const defaultCompanion: CompanionSettings = {
+  name: "Loto",
+  look: "loto",
+  note: "",
+}
 
 export type Profile = {
   id: "me"
@@ -13,11 +36,13 @@ export type Profile = {
   email: string
   auth: AuthMode
   fontScale: FontScale
+  theme: ThemeMode
   simpleLanguage: boolean
   lastOfferDay: string
   lastDoor: string
   returning: boolean
   account?: LocalAccount
+  companion?: CompanionSettings
 }
 
 export type Mark = { id?: number; day: string; tone: Tone }
@@ -31,6 +56,7 @@ class OasisDB extends Dexie {
   notes!: Table<Note, number>
   capsules!: Table<Capsule, number>
   contacts!: Table<TrustContact, number>
+  messages!: Table<ChatLine, number>
 
   constructor() {
     super("oasis")
@@ -40,6 +66,14 @@ class OasisDB extends Dexie {
       notes: "++id, createdAt",
       capsules: "++id, openOn",
       contacts: "++id",
+    })
+    this.version(2).stores({
+      profile: "id",
+      marks: "++id, day",
+      notes: "++id, createdAt",
+      capsules: "++id, openOn",
+      contacts: "++id",
+      messages: "++id, createdAt",
     })
   }
 }
@@ -52,6 +86,7 @@ export const emptyProfile: Profile = {
   email: "",
   auth: "none",
   fontScale: "md",
+  theme: "dia",
   simpleLanguage: false,
   lastOfferDay: "",
   lastDoor: "",

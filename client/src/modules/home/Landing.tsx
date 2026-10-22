@@ -4,6 +4,7 @@ import { services, SOURCE, SOURCE_DATE } from "@modules/directory/catalog"
 import { toneLabel, type Tone } from "../local-data/db"
 import { Leaves } from "./Leaves"
 import { useDevice } from "../shell/device"
+import { LandingNav } from "../shell/menus"
 import { BubblesIcon, CapsuleIcon, HugIcon, JournalIcon, PhoneIcon } from "./Icons"
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
@@ -62,25 +63,7 @@ export function Landing() {
       <a className="skip" href="#contenido">
         Saltar al contenido
       </a>
-      <header className="topbar">
-        <a className="brand" href="#inicio">
-          Oasis
-        </a>
-        <nav className="top-links" aria-label="Secciones">
-          <a href="#inicio">Inicio</a>
-          <a href="#cerca">Cerca</a>
-          <a href="#rincon">Rincón</a>
-          <a href="#hablar">Hablar</a>
-        </nav>
-        <div className="top-actions">
-          <a className="btn btn-peach" href="#hablar">
-            Hablar con alguien
-          </a>
-          <Link className="btn btn-sage btn-register" to="/entrar">
-            Registrarse
-          </Link>
-        </div>
-      </header>
+      <LandingNav />
       <main id="contenido">
         <section className="hero" id="inicio">
           <SectionTitle eyebrow="Un espacio tuyo" as="h1">Qué bueno que estés aquí.</SectionTitle>
@@ -209,7 +192,9 @@ export function Landing() {
           </div>
         </section>
       </main>
-      <footer className="legal">Prototipo académico. No es un servicio de salud.</footer>
+      <footer className="legal">
+        Prototipo académico. No es un servicio de salud. <Link to="/sala">Sala de colegio</Link>
+      </footer>
     </div>
   )
 }

@@ -118,6 +118,9 @@
 [data-type="casa-cultura"] { --dot: #9a78c9; --soft: #ece2f8; }
 [data-type="entidad-publica"] { --dot: #c9a24a; --soft: #f8ecc4; }
 [data-type="organizacion"] { --dot: #5fa583; --soft: #dcf0e3; }
+[data-category="distraccion"] { --dot: #9a78c9; --soft: #ece2f8; }
+[data-category="bienestar"] { --dot: #5fa583; --soft: #dcf0e3; }
+[data-category="ludica"] { --dot: #e58b6d; --soft: #fde3d3; }
 
 .agenda { display: grid; gap: 18px; margin-top: 40px; }
 .agenda-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }

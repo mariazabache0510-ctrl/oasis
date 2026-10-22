@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from "react"
-import { listServices, type ServiceCard } from "@modules/directory/catalog"
-import { orient } from "@modules/orientador/match"
+import { TRUST_MESSAGE, officialWhatsappHref, whatsappHref } from "@modules/bridge/whatsapp"
+import { examplePoints, listServices, type ServiceCard } from "@modules/directory/catalog"
 import { useOasis } from "../local-data/OasisProvider"
 import { track } from "../shell/track"
 import { OasisCard, type CardTone } from "../shell/OasisCard"
 import { PageHead } from "../shell/PageHead"
 import { CallIcon, ChatIcon, CopyGlyph, PhoneGlyph } from "../home/Icons"
+import { CompanionChat } from "./CompanionChat"
 
 const AVATARS = [
   ["#f3a283", "#c789c9"],
@@ -37,8 +38,9 @@ function prefersCalm(): boolean {
 const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
 
 /** Ventana de vista previa: cierra con Escape y deja el foco atrapado adentro. */
-function PreviewModal({ name, message, onSend, onClose }: { name: string; message: string; onSend: () => void; onClose: () => void }) {
+function PreviewModal({ name, phone, message, onMessage, onClose }: { name: string; phone: string; message: string; onMessage: (value: string) => void; onClose: () => void }) {
   const box = useRef<HTMLDivElement>(null)
+  const href = whatsappHref(phone, message)
 
   useEffect(() => {
     const before = document.activeElement as HTMLElement | null
@@ -86,16 +88,21 @@ function PreviewModal({ name, message, onSend, onClose }: { name: string; messag
       <div ref={box} className="talk-dialog-wrap">
         <OasisCard tone="peach" className="talk-dialog">
           <h2 className="oasis-title" id="preview-title">
-            {name} recibiría esto
+            Escribirle a {name}
           </h2>
-          <p className="talk-dialog-text">{message}</p>
+          <p className="muted">Oasis no envía el mensaje. Se abre WhatsApp para que lo edites y decidas.</p>
+          <textarea aria-label="Mensaje para WhatsApp" value={message} onChange={(event) => onMessage(event.target.value)} />
           <div className="talk-actions">
-            <button className="line-btn line-btn--call" type="button" onClick={onSend}>
-              <span className="line-btn-icon" aria-hidden="true">
-                <ChatIcon />
-              </span>
-              <span>Enviar por WhatsApp</span>
-            </button>
+            {href ? (
+              <a className="line-btn line-btn--chat" href={href} target="_blank" rel="noopener noreferrer">
+                <span className="line-btn-icon" aria-hidden="true">
+                  <ChatIcon />
+                </span>
+                <span>Abrir WhatsApp</span>
+              </a>
+            ) : (
+              <p>Ese número no arma un enlace de WhatsApp.</p>
+            )}
             <button className="line-btn line-btn--soft" type="button" onClick={onClose}>
               <span>Volver</span>
             </button>
@@ -108,10 +115,8 @@ function PreviewModal({ name, message, onSend, onClose }: { name: string; messag
 
 export function Talk() {
   const { contacts, addContact, deleteContact, profile } = useOasis()
-  const [question, setQuestion] = useState("")
   const [chosen, setChosen] = useState<ServiceCard>(listServices()[0])
-  const [intro, setIntro] = useState<string | null>(null)
-  const [limit, setLimit] = useState(orient("").limit)
+  const [draft, setDraft] = useState(TRUST_MESSAGE)
   const [contactName, setContactName] = useState("")
   const [contactPhone, setContactPhone] = useState("")
   const [preview, setPreview] = useState<{ name: string; phone: string } | null>(null)
@@ -119,35 +124,6 @@ export function Talk() {
   const [leaving, setLeaving] = useState<Set<number>>(new Set())
   const [toast, setToast] = useState<{ id: number; text: string } | null>(null)
   const featured = useRef<HTMLDivElement>(null)
-  const message = "Hola. Soy yo. Quería escribirte. Yo elegí enviarte este mensaje."
-
-  async function ask(event: React.FormEvent) {
-    event.preventDefault()
-    const local = orient(question)
-    try {
-      const response = await fetch("/api/orientador", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ question }),
-      })
-      if (!response.ok) throw new Error("offline")
-      const payload = (await response.json()) as { service: ServiceCard; limit: string; intro: string | null }
-      setChosen(payload.service)
-      setLimit(payload.limit)
-      setIntro(payload.intro)
-    } catch {
-      setChosen(local.service)
-      setLimit(local.limit)
-      setIntro(null)
-    }
-    setRound((value) => value + 1)
-  }
-
-  function whatsapp(phone: string, text: string) {
-    const digits = phone.replace(/\D/g, "")
-    const withCountry = digits.startsWith("57") ? digits : `57${digits}`
-    window.open(`https://wa.me/${withCountry}?text=${encodeURIComponent(text)}`, "_blank", "noopener")
-  }
 
   function pick(service: ServiceCard) {
     setChosen(service)
@@ -210,22 +186,7 @@ export function Talk() {
       />
 
       <div className="talk">
-        <OasisCard as="form" tone="mint" index={1} className="talk-form" onSubmit={(event: React.FormEvent) => void ask(event)}>
-          <label className="talk-label">
-            <span className="oasis-title">¿Qué quieres saber antes de llamar?</span>
-            <input
-              className="field talk-input"
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              placeholder="Por ejemplo: estoy en Villavicencio"
-            />
-          </label>
-          <button className="btn btn-sage talk-go" type="submit">
-            Ver un canal
-          </button>
-          {intro ? <p>{intro}</p> : null}
-          <p className="muted talk-limit">{limit}</p>
-        </OasisCard>
+        <CompanionChat onService={pick} />
 
         <div ref={featured} className="talk-anchor">
           <article className="talk-feature-wrap" key={`${chosen.id}-${round}`} aria-labelledby="talk-feature-title">
@@ -270,13 +231,13 @@ export function Talk() {
                       <PhoneGlyph />
                       <span>Llamar al {chosen.phone}</span>
                     </a>
-                    {chosen.whatsapp ? (
-                      <button className="line-btn line-btn--chat" type="button" onClick={() => whatsapp(chosen.whatsapp!, chosen.script)}>
+                    {officialWhatsappHref(chosen) ? (
+                      <a className="line-btn line-btn--chat" href={officialWhatsappHref(chosen) ?? undefined} target="_blank" rel="noopener noreferrer">
                         <span className="line-btn-icon" aria-hidden="true">
                           <ChatIcon />
                         </span>
-                        <span>Abrir WhatsApp</span>
-                      </button>
+                        <span>Abrir WhatsApp con el guion</span>
+                      </a>
                     ) : null}
                     <button className="line-btn line-btn--soft" type="button" onClick={() => void copy()}>
                       <CopyGlyph />
@@ -371,8 +332,15 @@ export function Talk() {
                       <p>{contact.phone}</p>
                     </div>
                     <div className="contact-actions">
-                      <button className="line-btn line-btn--call" type="button" onClick={() => setPreview({ name: contact.name, phone: contact.phone })}>
-                        <span>Ver mensaje</span>
+                      <button
+                        className="line-btn line-btn--call"
+                        type="button"
+                        onClick={() => {
+                          setDraft(TRUST_MESSAGE)
+                          setPreview({ name: contact.name, phone: contact.phone })
+                        }}
+                      >
+                        <span>Escribirle</span>
                       </button>
                       <button className="line-btn line-btn--soft" type="button" disabled={gone} onClick={() => contact.id && remove(contact.id)}>
                         <span>Quitar</span>
@@ -384,18 +352,33 @@ export function Talk() {
             </div>
           ) : null}
         </OasisCard>
+
+        <OasisCard as="section" tone="sky" className="quick-access" aria-labelledby="acceso-rapido">
+          <h2 className="oasis-title talk-heading" id="acceso-rapido">
+            Acceso rápido en esta página
+          </h2>
+          <p>
+            Un chatbot de WhatsApp necesitaría un proveedor que este prototipo no opera. Este panel es el mismo atajo, dentro de Oasis: el directorio, un punto de ejemplo y el guion. El mensaje no se envía solo.
+          </p>
+          <ul className="talk-steps">
+            {listServices().map((service) => (
+              <li key={service.id}>
+                <span>
+                  {service.name}: {service.phone}
+                  {service.whatsapp ? ". Tiene WhatsApp en el catálogo." : ". Sin WhatsApp en el catálogo."}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <p>
+            Ejemplo cercano: {examplePoints[0]?.label}. {examplePoints[0]?.note}
+          </p>
+          <p className="line-script">Guion de {chosen.name}: {chosen.script}</p>
+        </OasisCard>
       </div>
 
       {preview ? (
-        <PreviewModal
-          name={preview.name}
-          message={message}
-          onClose={closeModal}
-          onSend={() => {
-            whatsapp(preview.phone, message)
-            setPreview(null)
-          }}
-        />
+        <PreviewModal name={preview.name} phone={preview.phone} message={draft} onMessage={setDraft} onClose={closeModal} />
       ) : null}
 
       <div className="talk-toast-layer">

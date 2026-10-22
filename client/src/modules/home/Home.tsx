@@ -6,15 +6,22 @@ import { track } from "../shell/track"
 import { useDevice } from "../shell/device"
 import { OasisCard } from "../shell/OasisCard"
 import { PageHead } from "../shell/PageHead"
-import { HeartIcon, JournalIcon, PinIcon } from "./Icons"
+import { CompanionSetup } from "../talk/CompanionSetup"
+import { BubblesIcon, HeartIcon, PinIcon } from "./Icons"
 import { Leaves } from "./Leaves"
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 
+const patio = [
+  { to: "/rincon?pieza=distraer", tone: "butter", title: "Un sonido", text: "Tres piezas cortas, o la playlist si el servidor la tiene." },
+  { to: "/rincon?pieza=distraer", tone: "sky", title: "Burbujas", text: "Un juego sin puntaje. No mide cómo estás." },
+  { to: "/rincon?pieza=capsula", tone: "lilac", title: "Nota al futuro", text: "Escríbete algo para abrir otro día." },
+] as const
+
 const doors = [
-  { to: "/cerca", tone: "sky", index: "01", title: "Qué hay cerca", text: "Líneas oficiales, con fuente y fecha, y planes de esta semana.", icon: <PinIcon /> },
-  { to: "/rincon", tone: "lilac", index: "02", title: "Mi rincón", text: "Escribir, distraerte o dejarle una nota a tu yo de después.", icon: <JournalIcon /> },
-  { to: "/hablar", tone: "peach", index: "03", title: "Hablar con alguien", text: "Qué va a pasar, una frase para leer y el número.", icon: <HeartIcon /> },
+  { to: "/rincon?pieza=distraer", tone: "lilac", index: "01", title: "Distraerme", text: "Música, burbujas sin puntaje y una lectura corta.", icon: <BubblesIcon /> },
+  { to: "/cerca", tone: "sky", index: "02", title: "Por la zona", text: "La agenda de ejemplo y las líneas oficiales, cuando quieras mirarlas.", icon: <PinIcon /> },
+  { to: "/hablar", tone: "peach", index: "03", title: "Si quieres hablar", text: "Una puerta más. El guion y el número, sin convertir esto en una consulta.", icon: <HeartIcon /> },
 ] as const
 
 export function Home() {
@@ -24,8 +31,12 @@ export function Home() {
   const low = todayMark && (todayMark.tone === "bajito" || todayMark.tone === "pesado")
   const showOffer = Boolean(low && profile.lastOfferDay !== todayKey())
   const lead = profile.simpleLanguage
-    ? "Aquí están los teléfonos oficiales. No tienes que contar cómo estás."
-    : "Si no sabes a quién llamar en Villavicencio, aquí está el dato oficial. Sin cuenta y sin que tengas que explicar cómo estás."
+    ? "Puedes escuchar, jugar o escribir. Si quieres hablar con alguien, también puedes."
+    : "Entrar abre otro lugar: música, un juego sin puntaje y una nota para después. Pedir ayuda está siempre, y no es todo el espacio."
+
+  useEffect(() => {
+    track("visit")
+  }, [])
 
   useEffect(() => {
     const onPrompt = (event: Event) => {
@@ -40,11 +51,27 @@ export function Home() {
     <>
       <PageHead
         featured
-        eyebrow="Un espacio tuyo"
-        title={profile.name ? "Qué bueno verte," : "Qué bueno verte."}
-        accent={profile.name ? `${profile.name}.` : undefined}
+        eyebrow="Adentro"
+        title={profile.name ? "Este lugar es" : "Este lugar es"}
+        accent={profile.name ? `de ${profile.name}.` : "tuyo."}
         lede={lead}
       />
+
+      <CompanionSetup />
+
+      <section className="patio" aria-label="Para quedarte">
+        {patio.map((item, index) => (
+          <div className="tile-float" style={{ "--i": index } as CSSProperties} key={item.title}>
+            <OasisCard as={Link} to={item.to} tone={item.tone} index={index} className="door-card">
+              <h2 className="oasis-title">{item.title}</h2>
+              <p>{item.text}</p>
+              <span className="oasis-go">
+                Entrar <i aria-hidden="true">→</i>
+              </span>
+            </OasisCard>
+          </div>
+        ))}
+      </section>
 
       <div className="tile-float">
         <OasisCard as="section" tone="mint" index={2} className="mood-card" aria-label="Cómo vas hoy">

@@ -4,16 +4,25 @@ import { serveStatic } from "@hono/node-server/serve-static"
 import { Hono } from "hono"
 import { directoryRoutes } from "./modules/directory/router.js"
 import { eventsRoutes } from "./modules/events/router.js"
+import { adminRoutes, metricsRoutes } from "./modules/metrics/router.js"
+import { opsModeLive } from "./modules/metrics/store.js"
 import { musicRoutes } from "./modules/music/router.js"
+import { companionRoutes } from "./modules/companion/router.js"
 import { orientadorRoutes } from "./modules/orientador/router.js"
 
 const app = new Hono()
 
-app.get("/api/health", (c) => c.json({ ok: true }))
+app.get("/api/health", async (c) => {
+  const ops = await opsModeLive()
+  return c.json({ ok: true, ops })
+})
 app.route("/api/directory", directoryRoutes())
 app.route("/api/music", musicRoutes())
 app.route("/api/orientador", orientadorRoutes())
+app.route("/api/companion", companionRoutes())
 app.route("/api/events", eventsRoutes())
+app.route("/api/metrics", metricsRoutes())
+app.route("/api/admin", adminRoutes())
 
 app.use("/*", serveStatic({
   root: "./client/dist",

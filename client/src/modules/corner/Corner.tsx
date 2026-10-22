@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactElement } from "react"
+import { Link, useSearchParams } from "react-router-dom"
 import { todayKey, toneLabel, type Tone } from "../local-data/db"
 import { useOasis } from "../local-data/OasisProvider"
 import { useDevice } from "../shell/device"
@@ -6,6 +7,8 @@ import { OasisCard } from "../shell/OasisCard"
 import { PageHead } from "../shell/PageHead"
 import { BubblesIcon, CapsuleIcon, JournalIcon, LockIcon, MarkIcon } from "../home/Icons"
 import { CAPSULE_CHEER, Celebration, nextNoteCheer, type Cheer } from "./Celebration"
+import { Listening } from "./Listening"
+import { track } from "../shell/track"
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 const heights: Record<Tone, string> = {
@@ -42,15 +45,21 @@ function daysUntil(day: string): number {
   return Math.max(0, Math.round((target - start) / 86_400_000))
 }
 
+function pieceFrom(value: string | null): Tab | null {
+  if (value === "escribir" || value === "distraer" || value === "capsula" || value === "marca") return value
+  return null
+}
+
 export function Corner() {
   const oasis = useOasis()
   const { here } = useDevice()
-  const [tab, setTab] = useState<Tab>("escribir")
+  const [params] = useSearchParams()
+  const [tab, setTab] = useState<Tab>(() => pieceFrom(params.get("pieza")) ?? "escribir")
   const [note, setNote] = useState("")
   const [capsule, setCapsule] = useState("")
   const [openOn, setOpenOn] = useState(todayKey())
   const [bubbles, setBubbles] = useState(() => makeBubbles())
-  const [music, setMusic] = useState<{ spotify: Playlist | null; youtube: Playlist | null }>({ spotify: null, youtube: null })
+  const [music, setMusic] = useState<{ spotify: { available: boolean; name: string | null; embedUrl: string | null } | null; youtube: { available: boolean; name: string | null; embedUrl: string | null } | null }>({ spotify: null, youtube: null })
   const [cheer, setCheer] = useState<Cheer | null>(null)
   const days = useMemo(() => lastDays(oasis.marks), [oasis.marks])
   const tabIndex = tabs.findIndex((item) => item.id === tab)
@@ -60,17 +69,26 @@ export function Corner() {
   const timers = useRef<number[]>([])
   useEffect(() => () => timers.current.forEach((timer) => window.clearTimeout(timer)), [])
 
-  function celebrate(base: Omit<Cheer, "id">) {
-    setCheer({ ...base, id: Date.now() })
-  }
+  useEffect(() => {
+    const next = pieceFrom(params.get("pieza"))
+    if (next) setTab(next)
+  }, [params])
 
-  function openMusic() {
+  useEffect(() => {
+    if (tab !== "distraer") return
+    track("distraction")
+    const controller = new AbortController()
     void Promise.all([
-      fetch("/api/music/spotify").then((response) => response.json()),
-      fetch("/api/music/youtube").then((response) => response.json()),
+      fetch("/api/music/spotify", { signal: controller.signal }).then((response) => response.json()),
+      fetch("/api/music/youtube", { signal: controller.signal }).then((response) => response.json()),
     ])
       .then(([spotify, youtube]) => setMusic({ spotify, youtube }))
       .catch(() => setMusic({ spotify: null, youtube: null }))
+    return () => controller.abort()
+  }, [tab])
+
+  function celebrate(base: Omit<Cheer, "id">) {
+    setCheer({ ...base, id: Date.now() })
   }
 
   /** Pliega el papel, borra el texto a mitad de la animación y lo vuelve a abrir. */
@@ -119,10 +137,7 @@ export function Corner() {
             id={`tab-${item.id}`}
             aria-selected={tab === item.id}
             aria-controls="rincon-panel"
-            onClick={() => {
-              setTab(item.id)
-              if (item.id === "distraer") openMusic()
-            }}
+            onClick={() => setTab(item.id)}
           >
             <span className="rtab-icon">{item.icon}</span>
             <span className="rtab-label">{item.label}</span>
@@ -190,6 +205,7 @@ export function Corner() {
         ) : null}
 
         {tab === "distraer" ? (
+          <>
           <section className="rp-grid rp-grid-3">
             <div className="tile-float">
               <OasisCard as="article" tone="butter" className="rp-card">
@@ -233,13 +249,24 @@ export function Corner() {
             </div>
             <div className="tile-float" style={{ "--i": 2 } as CSSProperties}>
               <OasisCard as="article" tone="mint" index={2} className="rp-card">
-                <h2 className="oasis-title">Playlist</h2>
-                <Player title="Spotify" card={music.spotify} />
-                <Player title="YouTube" card={music.youtube} />
-                <p className="muted">Si el servidor todavía no tiene las llaves, esta puerta espera. Leer y las burbujas siguen aquí.</p>
+                <div className="rp-head">
+                  <span className="tile-badge">
+                    <BubblesIcon />
+                  </span>
+                  <div>
+                    <h2 className="oasis-title">Escucha</h2>
+                    <p className="muted">Sin evaluación. Si hay playlist, aparece aquí. Si no, suena un ejemplo.</p>
+                  </div>
+                </div>
+                <Listening spotify={music.spotify} youtube={music.youtube} />
               </OasisCard>
             </div>
           </section>
+          <p className="muted distraction-help">Si quieres hablar con alguien, la puerta sigue abierta. No hace falta para quedarte aquí.</p>
+          <Link className="btn btn-ghost" to="/hablar">
+            Hablar con alguien
+          </Link>
+          </>
         ) : null}
 
         {tab === "capsula" ? (
@@ -355,18 +382,6 @@ export function Corner() {
         ) : null}
       </div>
     </>
-  )
-}
-
-type Playlist = { available: boolean; name: string | null; embedUrl: string | null }
-
-function Player({ title, card }: { title: string; card: Playlist | null }) {
-  if (!card?.available || !card.embedUrl) return <p className="muted">{title} se conecta cuando el servidor tiene la playlist.</p>
-  return (
-    <div className="stack">
-      <h3>{card.name || title}</h3>
-      <iframe className="player" title={title} src={card.embedUrl} allow="autoplay; clipboard-write; encrypted-media; picture-in-picture" />
-    </div>
   )
 }
 

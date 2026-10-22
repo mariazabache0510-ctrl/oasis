@@ -16,8 +16,9 @@ export default defineConfig({
       manifest: {
         name: "Oasis",
         short_name: "Oasis",
-        description: "Un espacio tuyo. Sin nadie mirando.",
+        description: "Un espacio para acompañarte. Los canales oficiales siguen con fuente y fecha.",
         lang: "es",
+        id: "/",
         start_url: "/",
         scope: "/",
         display: "standalone",
@@ -48,7 +49,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/api": "http://127.0.0.1:3000",
+      "/api": process.env.VITE_API_PROXY || "http://127.0.0.1:3000",
     },
   },
 })

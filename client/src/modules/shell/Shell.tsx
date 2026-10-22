@@ -1,67 +1,28 @@
 import { useEffect } from "react"
-import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Link, Outlet, useLocation } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
-import { VoiceButton } from "../voice/VoiceButton"
-
-const links = [
-  { to: "/inicio", label: "Inicio" },
-  { to: "/cerca", label: "Cerca" },
-  { to: "/rincon", label: "Rincón" },
-  { to: "/hablar", label: "Hablar" },
-]
+import { InteriorNav } from "./menus"
 
 export function Shell() {
-  const { profile, ready, setLastDoor, signOut } = useOasis()
+  const { profile, ready, setLastDoor } = useOasis()
   const location = useLocation()
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (!ready) return
     if (profile.lastDoor !== location.pathname) void setLastDoor(location.pathname)
   }, [ready, location.pathname, profile.lastDoor, setLastDoor])
 
-  function leave() {
-    void signOut().then(() => navigate("/"))
-  }
-
   return (
-    <div className="app-frame">
+    <div className="app-frame lived">
       <a className="skip" href="#contenido">
         Saltar al contenido
       </a>
-      <header className="topbar">
-        <Link to="/inicio" className="brand">
-          Oasis
-        </Link>
-        <nav className="top-links" aria-label="Secciones">
-          {links.map((link) => (
-            <NavLink key={link.to} to={link.to}>
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="top-actions">
-          <Link className="btn btn-ghost" to="/recuerdo">
-            Tuyo
-          </Link>
-          <Link className="btn btn-peach" to="/hablar">
-            Hablar con alguien
-          </Link>
-          <button className="btn btn-ghost" type="button" onClick={leave}>
-            Salir
-          </button>
-        </div>
-      </header>
+      <InteriorNav />
+      <p className="lived-ribbon">Adentro hay música, notas y un mapa. Hablar con alguien es una puerta, no la única.</p>
       <main id="contenido">{<Outlet />}</main>
-      <footer className="legal">Prototipo académico. No es un servicio de salud.</footer>
-      <nav className="tabbar" aria-label="Secciones">
-        {links.map((link) => (
-          <NavLink key={link.to} to={link.to}>
-            {link.label}
-          </NavLink>
-        ))}
-      </nav>
-      <VoiceButton />
+      <footer className="legal">
+        Prototipo académico. No es un servicio de salud. <Link to="/sala">Sala de colegio</Link>
+      </footer>
     </div>
   )
 }

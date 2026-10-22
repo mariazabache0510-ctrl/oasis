@@ -1,20 +1,29 @@
 import { Component, lazy, Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react"
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
 import { PhraseCarousel } from "./PhraseCarousel"
 import { PopField } from "./PopField"
 import { useDevice } from "../shell/device"
+import { OasisMark } from "../shell/OasisMark"
+import { lotusSeenThisSession, markLotusSeen, prefersReducedMotion, resetLotusClock, webglAvailable } from "./lotusMotion"
+import { useVoice } from "../voice/VoiceProvider"
+import type { SpokenAuth } from "../voice/assistant"
 
-const LotusOpening = lazy(() => import("./LotusOpening"))
+const LotusIntro = lazy(() => import("./LotusIntro"))
 const IslandScene = lazy(() => import("./IslandScene"))
 
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class SceneBoundary extends Component<{ children: ReactNode; onFail?: () => void }, { failed: boolean }> {
   state = { failed: false }
   static getDerivedStateFromError() {
     return { failed: true }
   }
+  componentDidCatch() {
+    this.props.onFail?.()
+  }
   render() {
-    if (this.state.failed) return null
+    if (this.state.failed) {
+      return this.props.onFail ? <div className="lotus-screen lotus-fade" role="status" aria-label="Abriendo Oasis" /> : null
+    }
     return this.props.children
   }
 }
@@ -55,6 +64,7 @@ export function Entrance() {
   const navigate = useNavigate()
   const { here } = useDevice()
   const { profile, signInGuest, signInGoogle, register, login, clearLocal } = useOasis()
+  const { setBridge } = useVoice()
   const hasAccount = Boolean(profile.account)
   const [mode, setMode] = useState<Mode>(hasAccount ? "login" : "register")
   const [name, setName] = useState("")
@@ -70,10 +80,29 @@ export function Entrance() {
   const googleId = import.meta.env.VITE_GOOGLE_CLIENT_ID
   const onGoogle = useRef<(credential: string) => void>(() => undefined)
   const googleSlot = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
+  const draft = useRef({ name, email, password, mode })
+  draft.current = { name, email, password, mode }
+
+  useEffect(() => {
+    if (lotusSeenThisSession()) return
+    void import("./LotusIntro")
+    if (!prefersReducedMotion() && webglAvailable()) void import("./LotusStage")
+  }, [])
+
+  function openHome() {
+    if (lotusSeenThisSession()) {
+      window.setTimeout(() => navigate("/inicio"), 0)
+      return
+    }
+    markLotusSeen()
+    resetLotusClock()
+    setOpening(true)
+  }
 
   onGoogle.current = (credential) => {
     const person = readGoogleName(credential)
-    void signInGoogle(person.given_name || person.name || "", person.email || "").then(() => setOpening(true))
+    void signInGoogle(person.given_name || person.name || "", person.email || "").then(() => openHome())
   }
 
   useEffect(() => {
@@ -115,27 +144,48 @@ export function Entrance() {
     setPassword("")
   }
 
-  async function submit(event: FormEvent) {
-    event.preventDefault()
+  async function submitWith(event: FormEvent | null, next = draft.current) {
+    event?.preventDefault()
     setError("")
-    if (mode === "register") {
-      if (!name.trim()) return setError("Dime cómo quieres que te llame.")
-      if (!EMAIL.test(email.trim())) return setError("Revisa el correo: falta algo, como el @ o el punto.")
-      if (password.length < 6) return setError("La clave necesita al menos 6 caracteres.")
+    if (next.mode === "register") {
+      if (!next.name.trim()) return setError("Dime cómo quieres que te llame.")
+      if (!EMAIL.test(next.email.trim())) return setError("Revisa el correo: falta algo, como el @ o el punto.")
+      if (next.password.length < 6) return setError("La clave necesita al menos 6 caracteres.")
     } else {
-      if (!EMAIL.test(email.trim())) return setError("Escribe el correo con el que te registraste.")
-      if (!password) return setError("Escribe tu clave.")
+      if (!EMAIL.test(next.email.trim())) return setError("Escribe el correo con el que te registraste.")
+      if (!next.password) return setError("Escribe tu clave.")
     }
     setBusy(true)
-    const result = mode === "register" ? await register(name, email, password) : await login(email, password)
+    const result = next.mode === "register" ? await register(next.name, next.email, next.password) : await login(next.email, next.password)
     setBusy(false)
-    if (result.ok) setOpening(true)
+    if (result.ok) openHome()
     else setError(result.message)
   }
 
+  function applySpoken(spoken: SpokenAuth) {
+    const next = { ...draft.current }
+    if (spoken.mode) next.mode = spoken.mode
+    if (spoken.name) next.name = spoken.name
+    if (spoken.email) next.email = spoken.email
+    if (spoken.password) next.password = spoken.password
+    setMode(next.mode)
+    setName(next.name)
+    setEmail(next.email)
+    setPassword(next.password)
+    draft.current = next
+    if (spoken.submit) void submitWith(null, next)
+  }
+
+  const applyRef = useRef(applySpoken)
+  applyRef.current = applySpoken
+  useEffect(() => {
+    setBridge({ applyAuth: (spoken) => applyRef.current(spoken) })
+    return () => setBridge({})
+  }, [setBridge])
+
   async function enterWithoutAccount() {
     await signInGuest(name)
-    setOpening(true)
+    openHome()
   }
 
   async function forgot() {
@@ -150,14 +200,16 @@ export function Entrance() {
   const score = strength(password)
 
   return (
-    <section className="entrance">
+    <section className={opening ? "entrance is-opening" : "entrance"}>
       <PopField />
       {opening ? (
-        <Suspense fallback={<div className="lotus-screen" role="status" aria-label="Abriendo Oasis" />}>
-          <LotusOpening onDone={() => navigate("/inicio")} />
-        </Suspense>
+        <SceneBoundary onFail={() => navigate("/inicio")}>
+          <Suspense fallback={<div className="lotus-screen" role="status" aria-label="Abriendo Oasis"><p className="lotus-mark is-in">Oasis</p></div>}>
+            <LotusIntro onDone={() => navigate("/inicio")} />
+          </Suspense>
+        </SceneBoundary>
       ) : null}
-      <div className="login-split">
+      <div className="login-split" aria-hidden={opening || undefined} inert={opening || undefined}>
         <div className="login-left">
           <div className="enter-card auth-card">
             <span className="auth-glow" aria-hidden="true" />
@@ -177,7 +229,7 @@ export function Entrance() {
                 Ya tengo cuenta
               </button>
             </div>
-            <form className="auth-form" onSubmit={(event) => void submit(event)} noValidate>
+            <form ref={formRef} className="auth-form" onSubmit={(event) => void submitWith(event)} noValidate>
               {mode === "register" ? (
                 <label className="auth-field rise d4">
                   <span>¿Cómo te llamo?</span>
@@ -255,14 +307,19 @@ export function Entrance() {
         <aside className="login-right" aria-label="Oasis">
           <div className="login-ring" aria-hidden="true" />
           <header className="login-head">
-            <h1 className="login-brand">Oasis</h1>
+            <h1 className="login-title">
+              <Link to="/" className="login-brand">
+                <OasisMark />
+                <span>Oasis</span>
+              </Link>
+            </h1>
             <p className="login-tagline">
               Calma para hoy y <strong>a quién llamar</strong> en Villavicencio.
             </p>
           </header>
           <div className="login-scene" aria-hidden="true">
             <div className="login-scene-fallback" />
-            {motionOk ? (
+            {motionOk && !opening ? (
               <SceneBoundary>
                 <Suspense fallback={null}>
                   <IslandScene />

@@ -63,20 +63,21 @@ p { margin: 0; }
   padding: 18px 0 8px;
 }
 .brand {
-  font-family: Fraunces, serif;
-  font-size: 1.7rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: max-content;
+  max-width: 100%;
+  padding: 4px 2px 8px;
+  overflow: visible;
+  line-height: 1.2;
   text-decoration: none;
-  background: linear-gradient(120deg, #6d9a7c, #6f9eb5 38%, #9a84ae 68%, #c48974);
-  background-size: 220% 220%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: brand-flow 9s ease-in-out infinite, floaty 6.5s ease-in-out infinite;
+  color: var(--ink);
+  background: none;
+  animation: none;
 }
-.brand:hover, .brand:focus-visible {
-  animation: brand-flow 9s ease-in-out infinite;
-  transform: translateY(-3px) scale(1.04);
-}
+.brand-mark { width: 40px; height: 40px; flex: none; display: block; overflow: visible; }
+.brand-name { font-family: Fraunces, serif; font-size: 1.55rem; letter-spacing: -0.03em; line-height: 1.15; }
 .top-links, .top-actions { display: flex; gap: 8px; align-items: center; }
 .top-links { margin-left: auto; }
 .top-links a, .tabbar a {
@@ -347,25 +348,25 @@ textarea { min-height: 120px; resize: vertical; }
   animation: spin 60s linear infinite;
 }
 .login-brand {
-  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  width: auto;
+  max-width: 100%;
   margin: 0;
-  padding: 0 0.04em 0.06em 0;
-  font-size: clamp(3.8rem, 8vw, 6.6rem);
-  line-height: 0.95;
-  letter-spacing: -0.05em;
-  background:
-    linear-gradient(100deg, transparent 38%, rgba(255, 255, 255, 0.95) 50%, transparent 62%),
-    linear-gradient(120deg, #2fa37a, #2f8fd0 30%, #8a63d9 62%, #f0785c);
-  background-size: 260% 100%, 220% 100%;
-  background-repeat: no-repeat;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  cursor: default;
-  transition: letter-spacing 0.6s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.4s ease;
-  animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both, brand-sweep 7s ease-in-out 1s infinite, floaty 7s ease-in-out 1s infinite;
+  padding: 0.08em 0.04em 0.12em;
+  overflow: visible;
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+  color: var(--ink);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.login-brand:hover { letter-spacing: -0.02em; filter: saturate(1.2); }
+.login-brand .brand-mark { width: 72px; height: 72px; flex: none; }
+.login-brand:hover { letter-spacing: -0.02em; }
 .login-tagline {
   position: relative;
   max-width: 26ch;
@@ -698,7 +699,7 @@ textarea { min-height: 120px; resize: vertical; }
   .info-grid { grid-template-columns: repeat(3, 1fr); }
 }
 /* ---------- Landing: títulos de sección ---------- */
-.section-head { display: grid; gap: 12px; justify-items: start; }
+.section-head { display: grid; gap: 12px; justify-items: start; max-width: 100%; overflow: visible; }
 .eyebrow-pill {
   display: inline-flex;
   align-items: center;
@@ -725,10 +726,12 @@ textarea { min-height: 120px; resize: vertical; }
 .section-head:hover .eyebrow-pill { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(92, 70, 58, 0.12); }
 .section-title {
   position: relative;
-  padding-bottom: 14px;
+  max-width: 100%;
+  padding: 0.06em 0 14px;
+  overflow: visible;
   font-size: clamp(2.1rem, 4.6vw, 3.3rem);
-  line-height: 1.04;
-  letter-spacing: -0.04em;
+  line-height: 1.16;
+  letter-spacing: -0.03em;
   background: linear-gradient(110deg, #3f6b55, #3a7898 34%, #7357a0 66%, #b0603f);
   background-size: 220% 220%;
   -webkit-background-clip: text;

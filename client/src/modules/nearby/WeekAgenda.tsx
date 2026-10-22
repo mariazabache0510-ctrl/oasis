@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react"
 import { Link } from "react-router-dom"
-import { dayKey, eventTypes, listEvents, parseDay, type EventType, type WellnessEvent } from "@modules/events/catalog"
+import { activityCategories, dayKey, eventTypes, filterByCategory, listEvents, parseDay, type ActivityCategory, type EventType, type WellnessEvent } from "@modules/events/catalog"
 import { buildIcs } from "@modules/events/ics"
 import { OasisCard, type CardTone } from "../shell/OasisCard"
 import { CalendarIcon } from "../home/Icons"
+import { track } from "../shell/track"
 
 const DAY_NAMES = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 
@@ -29,6 +30,10 @@ function mondayOf(date: Date): Date {
 
 function typeLabel(type: EventType): string {
   return eventTypes.find((item) => item.id === type)?.label ?? type
+}
+
+function categoryLabel(category: ActivityCategory): string {
+  return activityCategories.find((item) => item.id === category)?.label ?? category
 }
 
 function clock(time: string): { hour: string; suffix: string } {
@@ -65,7 +70,11 @@ export function WeekAgenda() {
   const [events, setEvents] = useState<WellnessEvent[]>(() => listEvents(today))
   const [weekStart, setWeekStart] = useState(() => mondayOf(today))
   const [selected, setSelected] = useState(today)
-  const [active, setActive] = useState<Set<EventType>>(new Set())
+  const [active, setActive] = useState<Set<ActivityCategory>>(new Set())
+
+  useEffect(() => {
+    track("agenda")
+  }, [])
 
   // El servidor es la fuente; si no responde (sin internet) queda la agenda incluida en la app.
   useEffect(() => {
@@ -79,7 +88,7 @@ export function WeekAgenda() {
     return () => controller.abort()
   }, [today])
 
-  const visible = (items: WellnessEvent[]) => (active.size ? items.filter((item) => active.has(item.type)) : items)
+  const visible = (items: WellnessEvent[]) => filterByCategory(items, [...active])
   const onDay = (date: Date) => visible(events.filter((item) => item.date === dayKey(date)))
 
   const days = Array.from({ length: 7 }, (_, index) => addDays(weekStart, index))
@@ -104,11 +113,11 @@ export function WeekAgenda() {
     setSelected(today)
   }
 
-  function toggle(type: EventType) {
+  function toggle(category: ActivityCategory) {
     setActive((current) => {
       const next = new Set(current)
-      if (next.has(type)) next.delete(type)
-      else next.add(type)
+      if (next.has(category)) next.delete(category)
+      else next.add(category)
       return next
     })
   }
@@ -127,7 +136,7 @@ export function WeekAgenda() {
         </div>
       </div>
       <p className="muted agenda-lede">
-        Actividades de la Alcaldía, universidades, la Casa de la Cultura, entidades públicas y organizaciones de Villavicencio.
+        Filtros de ejemplo: Distracción, Bienestar y Lúdicas. Nada de esta lista está confirmado como actividad real.
       </p>
       {allSample ? (
         <p className="agenda-sample" role="note">
@@ -135,15 +144,15 @@ export function WeekAgenda() {
         </p>
       ) : null}
 
-      <div className="agenda-filters" role="group" aria-label="Filtrar por quién organiza">
+      <div className="agenda-filters" role="group" aria-label="Filtrar por Distracción, Bienestar o Lúdicas">
         <button className="ag-chip ag-today" type="button" aria-pressed={isToday} onClick={goToday}>
           <i aria-hidden="true" />
           Hoy
         </button>
-        {eventTypes.map((type) => (
-          <button key={type.id} className="ag-chip" data-type={type.id} type="button" aria-pressed={active.has(type.id)} onClick={() => toggle(type.id)}>
+        {activityCategories.map((category) => (
+          <button key={category.id} className="ag-chip" data-category={category.id} type="button" aria-pressed={active.has(category.id)} onClick={() => toggle(category.id)}>
             <i aria-hidden="true" />
-            {type.label}
+            {category.label}
           </button>
         ))}
       </div>
@@ -163,7 +172,7 @@ export function WeekAgenda() {
         <div className="week-strip">
           {days.map((date, index) => {
             const count = onDay(date)
-            const types = Array.from(new Set(count.map((item) => item.type))).slice(0, 4)
+            const categories = Array.from(new Set(count.map((item) => item.category))).slice(0, 3)
             const here = dayKey(date) === dayKey(selected)
             return (
               <button
@@ -178,8 +187,8 @@ export function WeekAgenda() {
                 <small>{DAY_NAMES[index]}</small>
                 <b>{date.getDate()}</b>
                 <span className="wk-dots" aria-hidden="true">
-                  {types.map((type) => (
-                    <i key={type} data-type={type} />
+                  {categories.map((category) => (
+                    <i key={category} data-category={category} />
                   ))}
                 </span>
               </button>
@@ -211,7 +220,7 @@ export function WeekAgenda() {
               const time = clock(item.time)
               return (
                 <li key={item.id}>
-                  <OasisCard as="article" tone={TONE[item.type]} index={index} className="ev" data-type={item.type}>
+                  <OasisCard as="article" tone={TONE[item.type]} index={index} className="ev" data-category={item.category}>
                     <span className="ev-bar" aria-hidden="true" />
                     <div className="ev-time">
                       <strong>{time.hour}</strong>
@@ -219,10 +228,11 @@ export function WeekAgenda() {
                     </div>
                     <div className="ev-body">
                       <p className="ev-tags">
-                        <span className="ev-type">
+                        <span className="ev-type" data-category={item.category}>
                           <i aria-hidden="true" />
-                          {typeLabel(item.type)}
+                          {categoryLabel(item.category)}
                         </span>
+                        <span className="ev-type">{typeLabel(item.type)}</span>
                         {item.sample ? <span className="ev-sample">Ejemplo</span> : null}
                         {item.free ? <span className="ev-free">Gratis</span> : null}
                       </p>

@@ -6,15 +6,16 @@ import { Nearby } from "./modules/nearby/Nearby"
 import { Corner } from "./modules/corner/Corner"
 import { Talk } from "./modules/talk/Talk"
 import { Memory } from "./modules/memory/Memory"
+import { Sala } from "./modules/admin/Sala"
 import { OasisProvider, useOasis } from "./modules/local-data/OasisProvider"
 import { Shell } from "./modules/shell/Shell"
 import { Water } from "./modules/shell/Water"
 import { useDevice } from "./modules/shell/device"
+import { VoiceProvider } from "./modules/voice/VoiceProvider"
 
 function FrontDoor() {
-  const { profile, ready } = useOasis()
+  const { ready } = useOasis()
   if (!ready) return <div className="boot" />
-  if (profile.returning || profile.auth !== "none") return <Entrance />
   return <Landing />
 }
 
@@ -36,9 +37,11 @@ export function App() {
       <DeviceWatcher />
       <Water />
       <BrowserRouter>
+        <VoiceProvider>
         <Routes>
           <Route path="/" element={<FrontDoor />} />
           <Route path="/entrar" element={<Entrance />} />
+          <Route path="/sala" element={<Sala />} />
           <Route element={<PrivateShell />}>
             <Route path="/inicio" element={<Home />} />
             <Route path="/cerca" element={<Nearby />} />
@@ -47,6 +50,7 @@ export function App() {
             <Route path="/recuerdo" element={<Memory />} />
           </Route>
         </Routes>
+        </VoiceProvider>
       </BrowserRouter>
     </OasisProvider>
   )

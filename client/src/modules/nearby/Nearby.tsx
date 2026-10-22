@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties } from "react"
-import { MapContainer, CircleMarker, TileLayer, useMap } from "react-leaflet"
-import { listServices, VILLAVICENCIO, type ServiceCard } from "@modules/directory/catalog"
+import { MapContainer, CircleMarker, Popup, TileLayer, Tooltip, useMap } from "react-leaflet"
+import { officialWhatsappHref } from "@modules/bridge/whatsapp"
+import { examplePoints, inactiveChannelNote, listServices, VILLAVICENCIO, type ServiceCard } from "@modules/directory/catalog"
+import { todayKey } from "../local-data/db"
 import { track } from "../shell/track"
 import { useDevice } from "../shell/device"
 import { OasisCard } from "../shell/OasisCard"
@@ -28,10 +30,21 @@ export function Nearby() {
   const [position, setPosition] = useState<[number, number]>([VILLAVICENCIO.lat, VILLAVICENCIO.lng])
   const [located, setLocated] = useState(false)
   const [message, setMessage] = useState("El mapa abre en Villavicencio. La ubicación se usa solo ahora y no se guarda.")
+  const [copied, setCopied] = useState("")
 
   useEffect(() => {
     track("directory_open")
   }, [])
+
+  async function report(service: ServiceCard) {
+    const note = inactiveChannelNote(service, todayKey())
+    try {
+      await navigator.clipboard.writeText(note)
+      setCopied(`Anoté el aviso de ${service.name}. No se envió a ningún servidor.`)
+    } catch {
+      setCopied("No pude copiar. El aviso queda en la ficha: no cambies el número por tu cuenta.")
+    }
+  }
 
   function locate() {
     if (!navigator.geolocation) {
@@ -65,12 +78,27 @@ export function Nearby() {
             <div className="map-wrap">
               <MapContainer center={position} zoom={12} scrollWheelZoom={false}>
                 <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                <CircleMarker center={position} radius={located ? 12 : 8} pathOptions={{ color: "#3d3a46", fillColor: "#f6cdb6", fillOpacity: 0.9 }} />
+                <CircleMarker center={position} radius={located ? 12 : 8} pathOptions={{ color: "#3d3a46", fillColor: "#f6cdb6", fillOpacity: 0.9 }}>
+                  <Tooltip>{located ? "Donde estás ahora. No se guarda." : "Villavicencio"}</Tooltip>
+                </CircleMarker>
+                {examplePoints.map((point) => (
+                  <CircleMarker key={point.id} center={[point.lat, point.lng]} radius={8} pathOptions={{ color: "#6d6778", fillColor: "#c9dcc8", fillOpacity: 0.9, dashArray: "4 3" }}>
+                    <Tooltip permanent direction="top">
+                      Ejemplo
+                    </Tooltip>
+                    <Popup>
+                      <strong>Ejemplo. {point.label}</strong>
+                      <p>{point.note}</p>
+                    </Popup>
+                  </CircleMarker>
+                ))}
                 <Recenter position={position} />
               </MapContainer>
             </div>
+            <p className="muted map-legend">El punto durazno es Villavicencio, o donde estás si lo pides. Los puntos salvia dicen Ejemplo: son ficticios y no son servicios verificados.</p>
             <p className="muted" role="status">
               {message}
+              {copied ? ` ${copied}` : ""}
             </p>
             <button className="btn btn-sky near-locate" type="button" onClick={locate}>
               Usar donde estoy
@@ -96,27 +124,32 @@ export function Nearby() {
                   <span className="live-dot" aria-hidden="true" />
                   {service.hours}
                 </p>
-                <p className="line-phone" aria-hidden="true">
-                  {service.phone}
-                </p>
+                <p className="line-phone">{service.phone}</p>
+                <h3 className="talk-sub">Qué pasa si llamo</h3>
+                <ol className="talk-steps">
+                  {service.whatHappens.map((step) => (
+                    <li key={step}>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+                <p className="line-script">{service.script}</p>
                 <div className="line-actions">
                   <a className="line-btn line-btn--call" href={service.phoneHref} onClick={() => track("call_click")}>
                     <PhoneGlyph />
                     <span>Llamar al {service.phone}</span>
                   </a>
-                  {service.whatsapp ? (
-                    <a
-                      className="line-btn line-btn--chat"
-                      href={`https://wa.me/${service.whatsapp}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                  {officialWhatsappHref(service) ? (
+                    <a className="line-btn line-btn--chat" href={officialWhatsappHref(service) ?? undefined} target="_blank" rel="noopener noreferrer">
                       <span className="line-btn-icon" aria-hidden="true">
                         <ChatIcon />
                       </span>
-                      <span>Escribir por WhatsApp</span>
+                      <span>WhatsApp con el guion</span>
                     </a>
                   ) : null}
+                  <button className="btn btn-ghost" type="button" onClick={() => void report(service)}>
+                    Anotar que no contestó
+                  </button>
                 </div>
                 <p className="muted line-source">
                   {service.source}. Consultado el {service.sourceDate}.

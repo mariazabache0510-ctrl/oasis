@@ -7,7 +7,7 @@
     "dev:web": "vite --config client/vite.config.ts",
     "build": "vite build --config client/vite.config.ts && esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/server.js --packages=external",
     "start": "node dist/server.js",
-    "test": "tsx --test src/playlist.test.ts src/modules/events/catalog.test.ts client/src/modules/voice/commands.test.ts"
+    "test": "tsx --test src/playlist.test.ts src/modules/events/catalog.test.ts src/modules/orientador/match.test.ts src/modules/bridge/whatsapp.test.ts src/modules/metrics/aggregate.test.ts src/modules/metrics/db.integration.test.ts src/modules/companion/local.test.ts client/src/modules/voice/commands.test.ts client/src/modules/voice/assistant.test.ts client/src/modules/entrance/petalDirection.test.ts"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",
@@ -15,12 +15,16 @@
     "@hono/node-server": "^1.19.9",
     "@react-three/drei": "^10.7.6",
     "@react-three/fiber": "^9.4.0",
+    "@react-three/postprocessing": "^3.0.4",
     "@vitejs/plugin-react": "^5.1.0",
     "dexie": "^4.2.1",
     "dotenv": "^17.2.3",
     "esbuild": "^0.25.11",
+    "gsap": "^3.13.0",
     "hono": "^4.10.3",
     "leaflet": "^1.9.4",
+    "pg": "^8.23.1",
+    "postprocessing": "^6.37.8",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-leaflet": "^5.0.0",
@@ -32,6 +36,7 @@
   "devDependencies": {
     "@types/leaflet": "^1.9.21",
     "@types/node": "^24.9.1",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "tsx": "^4.20.6",

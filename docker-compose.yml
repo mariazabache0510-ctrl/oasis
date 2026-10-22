@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: oasis
+      POSTGRES_PASSWORD: oasis_local
+      POSTGRES_DB: oasis
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - oasis-ops:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oasis -d oasis"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  oasis:
+    build:
+      context: .
+      args:
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+    image: oasis:local
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    environment:
+      PORT: "3000"
+      DATABASE_URL: postgresql://oasis:oasis_local@postgres:5432/oasis
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_CLIENT_ID:-}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_CLIENT_SECRET:-}
+      SPOTIFY_PLAYLIST_ID: ${SPOTIFY_PLAYLIST_ID:-}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      YOUTUBE_PLAYLIST_ID: ${YOUTUBE_PLAYLIST_ID:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  oasis-ops:
