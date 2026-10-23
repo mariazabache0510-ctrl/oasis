@@ -1,29 +1,11 @@
 /** Reloj y ayudas de la introducción. Sin Three, para poder precargar el resto aparte. */
 
-const SEEN_KEY = "oasis.lotusIntro"
-
 const clock = {
   startedAt: 0,
   handedOff: false,
 }
 
 export type LotusQuality = "full" | "light"
-
-export function lotusSeenThisSession(): boolean {
-  try {
-    return sessionStorage.getItem(SEEN_KEY) === "1"
-  } catch {
-    return false
-  }
-}
-
-export function markLotusSeen(): void {
-  try {
-    sessionStorage.setItem(SEEN_KEY, "1")
-  } catch {
-    /* modo privado: la intro igual puede verse, solo no se recuerda */
-  }
-}
 
 export function resetLotusClock(): void {
   clock.startedAt = 0
@@ -173,13 +155,15 @@ export function lotusQuality(): LotusQuality {
   const nav = navigator as Navigator & {
     deviceMemory?: number
     connection?: { saveData?: boolean }
+    userAgentData?: { mobile?: boolean }
   }
   const memory = nav.deviceMemory
   const cores = navigator.hardwareConcurrency ?? 8
   const saveData = Boolean(nav.connection?.saveData)
   const small = Math.min(window.innerWidth, window.innerHeight) < 760
+  const screenShort = Math.min(window.screen?.width || 0, window.screen?.height || 0)
   const coarse = window.matchMedia("(pointer: coarse)").matches
-  const phone = /iPhone|iPod|Android.+Mobile|Windows Phone/i.test(navigator.userAgent) || (coarse && small)
+  const phone = nav.userAgentData?.mobile === true || /iPhone|iPod|Android.+Mobi|Mobi.+Android|Windows Phone/i.test(navigator.userAgent) || (coarse && (small || screenShort < 700))
   if (saveData || phone || softwareRenderer() || (memory !== undefined && memory <= 4) || cores <= 2) return "light"
   return "full"
 }

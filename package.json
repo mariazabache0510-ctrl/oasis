@@ -8,7 +8,7 @@
     "dev:web": "vite --config client/vite.config.ts",
     "build": "vite build --config client/vite.config.ts && esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/server.js --packages=external",
     "start": "node dist/server.js",
-    "test": "tsx --test src/playlist.test.ts src/modules/events/catalog.test.ts src/modules/orientador/match.test.ts src/modules/bridge/whatsapp.test.ts src/modules/metrics/aggregate.test.ts src/modules/metrics/db.integration.test.ts src/modules/companion/local.test.ts client/src/modules/voice/commands.test.ts client/src/modules/voice/assistant.test.ts client/src/modules/entrance/petalDirection.test.ts"
+    "test": "tsx --test src/playlist.test.ts src/modules/events/catalog.test.ts src/modules/orientador/match.test.ts src/modules/bridge/whatsapp.test.ts src/modules/metrics/aggregate.test.ts src/modules/metrics/db.integration.test.ts src/modules/companion/local.test.ts client/src/modules/voice/commands.test.ts client/src/modules/voice/assistant.test.ts client/src/modules/entrance/petalDirection.test.ts client/src/modules/shell/device.test.ts"
   },
   "dependencies": {
     "@fontsource/fraunces": "^5.2.9",

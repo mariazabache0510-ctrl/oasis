@@ -1,4 +1,5 @@
 import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react"
+import { Link } from "react-router-dom"
 import { prefersReducedMotion, revealHome, webglAvailable } from "./lotusMotion"
 
 const LotusStage = lazy(() => import("./LotusStage"))
@@ -43,9 +44,14 @@ function LotusFade({ onDone, delay = 680 }: IntroProps & { delay?: number }) {
     <div className="lotus-screen lotus-fade" role="status" aria-label="Abriendo Oasis">
       <p className="lotus-mark is-in">Oasis</p>
       <p className="lotus-note">Versión liviana</p>
-      <button className="lotus-skip" type="button" onClick={finish}>
-        Saltar
-      </button>
+      <div className="lotus-controls">
+        <button className="lotus-skip" type="button" onClick={finish}>
+          Saltar
+        </button>
+        <Link className="lotus-skip lotus-back" to="/">
+          Volver
+        </Link>
+      </div>
     </div>
   )
 }

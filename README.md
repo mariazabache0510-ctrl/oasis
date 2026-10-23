@@ -15,7 +15,7 @@ La versión publicada está en [oasis-hiu0.onrender.com](https://oasis-hiu0.onre
 | Ruta | Quién entra | Qué guarda o muestra |
 | --- | --- | --- |
 | `/` | Cualquier persona | Página pública. El botón dice Registrarse, o Entrar si este navegador ya tuvo una sesión. |
-| `/entrar` | Cualquier persona | Registro local, ingreso, Google si hay identificador, o continuar sin cuenta. La primera vez de la sesión, al entrar, el loto se abre si hay WebGL y el movimiento está permitido. |
+| `/entrar` | Cualquier persona | Registro local, ingreso, Google si hay identificador, o continuar sin cuenta. Cada ingreso abre el loto si hay WebGL y el movimiento está permitido. En el celular esa escena ocupa toda la pantalla, con Saltar y Volver. |
 | `/inicio` | Sesión abierta | El patio: sonido, burbujas, nota al futuro, marca y tres puertas. |
 | `/cerca` | Sesión abierta | Fichas con guion, mapa y agenda filtrable. |
 | `/rincon` | Sesión abierta | Diario, distracción, cápsula y marca. |
@@ -23,7 +23,7 @@ La versión publicada está en [oasis-hiu0.onrender.com](https://oasis-hiu0.onre
 | `/recuerdo` | Sesión abierta | Nombre, forma y nota del compañero. Resumen local, tamaño de letra, lenguaje sencillo y modo noche. |
 | `/sala` | Clave de colegio, aparte de la sesión personal | Conteos anónimos y publicación de actividades de ejemplo. |
 
-La página pública informa. Después de entrar, el tipo de dispositivo elige un menú: grilla en el celular, riel en la tablet o barra en el computador. El inicio y las secciones son el espacio vivido: la distracción va primero y hablar con alguien es una puerta más. El registro activa el diario, la cápsula, los contactos, el compañero y la voz.
+La página pública informa. Un celular real tiene su propia grilla, también en la entrada y en el interior: Inicio, Cerca, Rincón y Hablar, y según la pantalla Tuyo, Ayuda, Noche, Salir y Voz. La tablet conserva el riel y el computador la barra. La detección trata como celular un Android sin la palabra Mobile si la pantalla es chica, un iPhone en sitio de escritorio (agente Macintosh con toque y pantalla corta) y un puntero grueso con ventana chica. El inicio y las secciones son el espacio vivido: la distracción va primero y hablar con alguien es una puerta más. El registro activa el diario, la cápsula, los contactos, el compañero y la voz.
 
 ## Tecnologías
 
@@ -68,7 +68,7 @@ npm start
 
 Queda en [http://127.0.0.1:3000](http://127.0.0.1:3000). `GET /api/health` responde `ok: true` y `ops`: `sin-configurar` si no hay `DATABASE_URL`, `postgres` si la base responde, o `no-disponible` si la URL existe y la base no contesta.
 
-Las pruebas cubren playlists, la agenda y sus tres filtros, el orientador, el enlace de WhatsApp, la semilla de métricas, los comandos de voz, la palabra Oasis, el llenado hablado del formulario, las respuestas locales del compañero y la dirección de los pétalos. Si no hay `DATABASE_URL`, la prueba de Postgres se omite:
+Las pruebas cubren playlists, la agenda y sus tres filtros, el orientador, el enlace de WhatsApp, la semilla de métricas, los comandos de voz, la palabra Oasis, el llenado hablado del formulario, las respuestas locales del compañero, la dirección de los pétalos y la clasificación de celular, tablet y computador. Si no hay `DATABASE_URL`, la prueba de Postgres se omite:
 
 ```bash
 npm test

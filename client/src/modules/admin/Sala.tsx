@@ -5,6 +5,7 @@ import { aggregateKpis, syntheticKpiEvents, type KpiSummary } from "@modules/met
 import { toneLabel, type Tone } from "../local-data/db"
 import { useOasis } from "../local-data/OasisProvider"
 import { OasisCard } from "../shell/OasisCard"
+import { PhoneContextNav } from "../shell/menus"
 
 const tones: Tone[] = ["luminoso", "calma", "regular", "bajito", "pesado"]
 
@@ -148,6 +149,7 @@ export function Sala() {
 
   return (
     <div className="sala">
+      <PhoneContextNav />
       <a className="skip" href="#sala-contenido">
         Saltar al contenido
       </a>

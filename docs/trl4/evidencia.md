@@ -1,6 +1,6 @@
 # Evidencia
 
-Fecha de la corrida: 22 oct 2026. Máquina de desarrollo, Windows, Node v24.12.0.
+Fecha de la corrida: 23 oct 2026. Máquina de desarrollo, Windows, Node v24.12.0.
 
 Esta nota solo deja lo que `npm test` imprimió en esa corrida. No se repitieron las llamadas HTTP ni el recorrido en el navegador, así que no hay cifras de esa otra verificación.
 
@@ -11,14 +11,14 @@ Comando: `npm test`
 `DATABASE_URL` no estaba definida en el proceso. Resultado real del corredor `node:test`:
 
 ```
-ℹ tests 34
+ℹ tests 43
 ℹ suites 0
-ℹ pass 33
+ℹ pass 42
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 1
 ℹ todo 0
-ℹ duration_ms 10984.0275
+ℹ duration_ms 11761.2016
 ```
 
 La prueba omitida fue `postgres guarda un conteo anónimo cuando DATABASE_URL existe`, con el motivo `DATABASE_URL ausente: la experiencia local no depende de esta prueba`.
@@ -26,6 +26,7 @@ La prueba omitida fue `postgres guarda un conteo anónimo cuando DATABASE_URL ex
 Pasaron, con estos títulos:
 
 - Por defecto los pétalos abren desde el centro. La dirección se puede invertir.
+- Un iPhone es celular aunque el navegador diga que hay hover. Android con Mobile y `userAgentData.mobile` es celular. Un WebView Android sin la palabra Mobile sigue siendo celular si la pantalla es chica. Firefox Android con Mobile antes de Android es celular. Un iPhone en modo escritorio no se trata como iPad. Un iPad sigue en el riel de tablet. La emulación con puntero grueso y viewport de celular es celular aunque el monitor sea grande. Encoger la ventana de escritorio no basta para mostrar el menú de celular. Un escritorio a 1280 sigue en la barra de escritorio.
 - La palabra Oasis despierta y deja el resto. Sin esa palabra no navega en escucha continua. El botón sigue entendiendo el comando directo.
 - En la entrada llena correo y clave sin devolver la clave en el aviso.
 - Normaliza tildes, mayúsculas y signos. Entiende cada destino con la palabra sola y con frases completas. No inventa destinos.

@@ -4,6 +4,7 @@ import "@fontsource/nunito/700.css"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { App } from "./App"
+import { applyDevice, detectDevice } from "./modules/shell/device"
 import "./styles.css"
 import "./pages.css"
 import "./home.css"
@@ -22,6 +23,8 @@ try {
 } catch {
   /* la preferencia queda en claro */
 }
+
+applyDevice(detectDevice())
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -4,8 +4,9 @@ import { useOasis } from "../local-data/OasisProvider"
 import { PhraseCarousel } from "./PhraseCarousel"
 import { PopField } from "./PopField"
 import { useDevice } from "../shell/device"
+import { PhonePublicNav } from "../shell/menus"
 import { OasisMark } from "../shell/OasisMark"
-import { lotusSeenThisSession, markLotusSeen, prefersReducedMotion, resetLotusClock, webglAvailable } from "./lotusMotion"
+import { prefersReducedMotion, resetLotusClock, webglAvailable } from "./lotusMotion"
 import { useVoice } from "../voice/VoiceProvider"
 import type { SpokenAuth } from "../voice/assistant"
 
@@ -85,17 +86,11 @@ export function Entrance() {
   draft.current = { name, email, password, mode }
 
   useEffect(() => {
-    if (lotusSeenThisSession()) return
     void import("./LotusIntro")
     if (!prefersReducedMotion() && webglAvailable()) void import("./LotusStage")
   }, [])
 
   function openHome() {
-    if (lotusSeenThisSession()) {
-      window.setTimeout(() => navigate("/inicio"), 0)
-      return
-    }
-    markLotusSeen()
     resetLotusClock()
     setOpening(true)
   }
@@ -201,6 +196,7 @@ export function Entrance() {
 
   return (
     <section className={opening ? "entrance is-opening" : "entrance"}>
+      <PhonePublicNav />
       <PopField />
       {opening ? (
         <SceneBoundary onFail={() => navigate("/inicio")}>

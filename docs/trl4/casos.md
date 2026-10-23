@@ -7,7 +7,7 @@ Entorno controlado: este repositorio, datos sintéticos y escenarios ficticios. 
 - Entrada: primera visita, sin sesión, ruta `/`.
 - Esperado: página informativa, con registro y "Hablar con alguien". No hay diario ni juego.
 - Luego: "Entrar sin cuenta" en `/entrar`.
-- Esperado: shell con cinta "Adentro", inicio en `/inicio`, patio (sonido, burbujas, nota al futuro) y tres puertas. La ayuda sigue en la barra, sin ser la única pieza.
+- Esperado: shell con cinta "Adentro", inicio en `/inicio`, patio (sonido, burbujas, nota al futuro) y tres puertas. La ayuda sigue en el menú del dispositivo (Ayuda en la grilla del celular, Hablar con alguien en el riel y en la barra), sin ser la única pieza.
 
 ## 2. Distracción
 
@@ -50,10 +50,13 @@ Entorno controlado: este repositorio, datos sintéticos y escenarios ficticios. 
 
 ## 8. Menús, noche y loto
 
-- El celular usa la grilla de abajo, la tablet el riel y el computador la barra. Cada tipo de dispositivo tiene el suyo.
+- En un celular real la grilla fija de abajo es propia. En la página pública y en `/entrar`: Inicio, Cerca, Rincón, Hablar, Registrarse o Entrar (o Volver adentro), Ayuda, Noche y Voz. En el interior: Inicio, Cerca, Rincón, Hablar, Tuyo, Ayuda, Noche, Salir y Voz. En `/sala` usa la grilla pública si no hay sesión y la del interior si ya se entró.
+- La tablet conserva el riel y el computador la barra, en la página pública y en el interior. Encoger la ventana de escritorio con puntero fino no cambia a la grilla.
+- Un Android sin la palabra Mobile, un iPhone en sitio de escritorio (agente Macintosh con toque y pantalla corta) y un puntero grueso con el lado corto por debajo de 700 se clasifican como celular.
 - "Noche" pone `data-theme="noche"` y el botón pasa a "Día". "Letra grande" y "Lenguaje sencillo" siguen en `/recuerdo`.
-- Al entrar, si hay WebGL y no está pedido menos movimiento, se abre el loto: se puede saltar, invertir la dirección de los pétalos y pasar a la versión liviana. El agua refleja los pétalos. `prefers-reduced-motion` deja una cortina corta, sin la escena 3D.
-- La misma sesión del navegador no vuelve a montar el loto.
+- Al entrar, si hay WebGL y no está pedido menos movimiento, se abre el loto: se puede saltar, invertir la dirección de los pétalos y pasar a la versión liviana. El agua refleja los pétalos. `prefers-reduced-motion` deja una cortina corta, sin la escena 3D, con Saltar y, en el celular, Volver.
+- En el celular la introducción ocupa todo el viewport. La grilla se oculta mientras está abierta. La barra de escritorio no se monta en `/entrar` y no tapa la escena.
+- Cada ingreso (cuenta, Google o sin cuenta) vuelve a montar el loto, aunque esta sesión del navegador ya lo haya visto.
 
 ## 9. Sala y Postgres
 

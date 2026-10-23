@@ -38,7 +38,7 @@ El cliente habla con el mismo origen. En desarrollo, Vite reenvía `/api` a `127
 | Puerta | `modules/entrance/Entrance.tsx` | Registro, ingreso, Google y entrada sin cuenta. La isla y el loto van en carga diferida. |
 | Loto | `modules/entrance/LotusStage.tsx` | Apertura con Three.js y GSAP: saltar, invertir pétalos, reflejo en el agua y versión liviana. |
 | Página pública | `modules/home/Landing.tsx` | Visita sin sesión. Sigue en `/` aunque este navegador ya haya entrado antes. |
-| Menús | `modules/shell/menus.tsx` | Tres menús distintos: grilla del celular, riel de la tablet y barra del computador. |
+| Menús | `modules/shell/menus.tsx` | Grilla del celular en la página pública, en la entrada, en el interior y en la sala. Riel de la tablet y barra del computador en la página pública y en el interior. |
 | Shell | `modules/shell/Shell.tsx` | Menú del interior, cinta y salida. Solo con sesión. |
 | Marca | `modules/shell/OasisMark.tsx` | Loto propio, el mismo dibujo del favicon. |
 | Inicio | `modules/home/Home.tsx` | Patio, marca del día y puertas. No repite la página pública. |
@@ -50,9 +50,9 @@ El cliente habla con el mismo origen. En desarrollo, Vite reenvía `/api` a `127
 | Recuerdo | `modules/memory/Memory.tsx` | Compañero, conteos locales, letra y lenguaje sencillo. |
 | Voz | `modules/voice/VoiceProvider.tsx` | Tras el primer toque al micrófono, la escucha continua espera la palabra Oasis. En `/entrar` puede llenar el formulario. |
 
-`useDevice` elige "este computador", "esta tablet" o "este celular" para hablar de dónde viven los datos y para dibujar uno de los tres menús. No envía esa lectura al servidor.
+`useDevice` escribe `data-device` en el documento y elige "este computador", "esta tablet" o "este celular" para hablar de dónde viven los datos. Esa lectura no se envía al servidor. Cuenta como celular un Android aunque el agente no diga Mobile, un iPhone en sitio de escritorio (agente Macintosh, varios puntos de toque y pantalla corta) y un puntero grueso con el lado corto por debajo de 700. Una ventana de escritorio angosta con puntero fino sigue en la barra.
 
-Si la persona pide menos movimiento, o si no hay WebGL, la entrada no monta la escena del loto: muestra una cortina corta con el botón Saltar. La escena tampoco se repite en la misma sesión del navegador. La carpeta de referencia `Loto` no está en la raíz del repositorio.
+Si la persona pide menos movimiento, o si no hay WebGL, la entrada no monta la escena del loto: muestra una cortina corta con Saltar y, en el celular, Volver. Cada ingreso vuelve a montar la escena. En el celular ocupa todo el viewport, con esos dos controles, y queda por encima de la grilla. La barra de escritorio no se dibuja en `/entrar` y no tapa la introducción. La carpeta de referencia `Loto` no está en la raíz del repositorio.
 
 ## Datos locales
 
@@ -129,7 +129,7 @@ Ninguna ruta exige sesión. La sesión solo existe en el navegador y decide qué
 | `npm run dev:web` | Vite. El proxy de `/api` apunta a `127.0.0.1:3000`. |
 | `npm run build` | `client/dist` más `dist/server.js`. |
 | `npm start` | `node dist/server.js`. |
-| `npm test` | Playlists, agenda, filtros, orientador, WhatsApp, semilla, voz, compañero y pétalos. Postgres se omite sin `DATABASE_URL`. |
+| `npm test` | Playlists, agenda, filtros, orientador, WhatsApp, semilla, voz, compañero, pétalos y clasificación de dispositivo. Postgres se omite sin `DATABASE_URL`. |
 
 El service worker de Workbox precachea estáticos y usa `index.html` como respaldo de navegación. Los HTML y el propio service worker se sirven con `Cache-Control: no-cache` para que un deploy nuevo pueda reemplazarlos. El manifiesto pide `display: standalone` e incluye `favicon.svg`, `icon-192.png` e `icon-512.png`.
 
@@ -156,4 +156,4 @@ El servicio `oasis` del workspace de Mariana despliega la rama `main` con runtim
 - El orientador elige primero por reglas y solo entonces, si hay llave, pide una frase. La frase no sustituye a la ficha oficial.
 - El compañero hace lo mismo en el chat: la ficha sale de las reglas y Gemini solo puede cambiar la frase si pasa el filtro.
 - La voz no tiene un modelo propio. El primer toque pide el micrófono. Después, la escucha continua espera la palabra Oasis. Si el navegador no ofrece reconocimiento, el panel lo dice y el menú sigue usable.
-- Hay un menú por tipo de dispositivo: grilla, riel o barra.
+- Hay un menú por tipo de dispositivo: grilla, riel o barra. En el celular la grilla también está en la página pública, en la entrada y en la sala.

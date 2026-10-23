@@ -1,7 +1,6 @@
 import type { ReactNode } from "react"
 import { Link, NavLink, useNavigate } from "react-router-dom"
 import { useOasis } from "../local-data/OasisProvider"
-import { useDevice, type DeviceKind } from "./device"
 import { BrandLockup } from "./OasisMark"
 import { useVoice } from "../voice/VoiceProvider"
 
@@ -16,10 +15,10 @@ const places: Item[] = [
 ]
 
 const landingPlaces = [
-  { href: "#inicio", label: "Inicio" },
-  { href: "#cerca", label: "Cerca" },
-  { href: "#rincon", label: "Rincón" },
-  { href: "#hablar", label: "Hablar" },
+  { href: "/#inicio", label: "Inicio" },
+  { href: "/#cerca", label: "Cerca" },
+  { href: "/#rincon", label: "Rincón" },
+  { href: "/#hablar", label: "Hablar" },
 ]
 
 function AssistButton({ short = false }: { short?: boolean }) {
@@ -107,14 +106,17 @@ function PhoneInterior({ onLeave, night, onNight }: { onLeave: () => void; night
   )
 }
 
-function byDevice(kind: DeviceKind, desktop: ReactNode, tablet: ReactNode, phone: ReactNode) {
-  if (kind === "phone") return phone
-  if (kind === "tablet") return tablet
-  return desktop
+function MenuSlots({ desktop, tablet, phone }: { desktop: ReactNode; tablet: ReactNode; phone: ReactNode }) {
+  return (
+    <>
+      <div className="menu-slot menu-slot-desktop">{desktop}</div>
+      <div className="menu-slot menu-slot-tablet">{tablet}</div>
+      <div className="menu-slot menu-slot-phone">{phone}</div>
+    </>
+  )
 }
 
-export function InteriorNav() {
-  const { kind } = useDevice()
+function useInteriorHandlers() {
   const navigate = useNavigate()
   const { profile, setTheme, signOut } = useOasis()
   const night = profile.theme === "noche"
@@ -124,11 +126,17 @@ export function InteriorNav() {
   function onLeave() {
     void signOut().then(() => navigate("/"))
   }
-  return byDevice(
-    kind,
-    <DesktopInterior onLeave={onLeave} night={night} onNight={onNight} />,
-    <TabletInterior onLeave={onLeave} night={night} onNight={onNight} />,
-    <PhoneInterior onLeave={onLeave} night={night} onNight={onNight} />,
+  return { onLeave, night, onNight }
+}
+
+export function InteriorNav() {
+  const handlers = useInteriorHandlers()
+  return (
+    <MenuSlots
+      desktop={<DesktopInterior {...handlers} />}
+      tablet={<TabletInterior {...handlers} />}
+      phone={<PhoneInterior {...handlers} />}
+    />
   )
 }
 
@@ -142,59 +150,93 @@ function LandingPlaces() {
   return (
     <>
       {landingPlaces.map((item) => (
-        <a key={item.href} className="menu-place" href={item.href}>
+        <Link key={item.href} className="menu-place" to={item.href}>
           {item.label}
-        </a>
+        </Link>
       ))}
     </>
   )
 }
 
-export function LandingNav() {
-  const { kind } = useDevice()
-  const placesNav = <LandingPlaces />
-  const enter = <LandingEnter />
-  if (kind === "phone") {
-    return (
-      <>
-        <header className="phone-brand">
-          <BrandLockup to="/" />
-        </header>
-        <nav className="phone-menu" aria-label="Secciones públicas">
-          {placesNav}
-          {enter}
-          <AssistButton short />
-        </nav>
-      </>
-    )
-  }
-  if (kind === "tablet") {
-    return (
-      <aside className="tablet-rail" aria-label="Menú público">
-        <BrandLockup to="/" />
-        <p className="menu-kicker">Para mirar</p>
-        <nav className="rail-places" aria-label="Secciones">
-          {placesNav}
-        </nav>
-        <p className="menu-kicker">Entrar</p>
-        <div className="menu-actions">
-          {enter}
-          <AssistButton />
-        </div>
-      </aside>
-    )
-  }
+function NightButton() {
+  const { profile, setTheme } = useOasis()
+  const night = profile.theme === "noche"
   return (
-    <header className="desk-bar">
-      <BrandLockup to="/" />
-      <nav className="desk-places" aria-label="Secciones públicas">
-        {placesNav}
+    <button className="menu-quiet" type="button" aria-pressed={night} onClick={() => void setTheme(night ? "dia" : "noche")}>
+      {night ? "Día" : "Noche"}
+    </button>
+  )
+}
+
+function PhonePublic() {
+  return (
+    <>
+      <header className="phone-brand">
+        <BrandLockup to="/" />
+      </header>
+      <nav className="phone-menu" aria-label="Secciones públicas">
+        <LandingPlaces />
+        <LandingEnter />
+        <Link className="menu-help" to="/hablar">Ayuda</Link>
+        <NightButton />
+        <AssistButton short />
       </nav>
-      <div className="desk-gap" aria-hidden="true" />
-      <div className="menu-actions">
-        {enter}
-        <AssistButton />
-      </div>
-    </header>
+    </>
+  )
+}
+
+export function LandingNav() {
+  return (
+    <MenuSlots
+      desktop={
+        <header className="desk-bar">
+          <BrandLockup to="/" />
+          <nav className="desk-places" aria-label="Secciones públicas">
+            <LandingPlaces />
+          </nav>
+          <div className="desk-gap" aria-hidden="true" />
+          <div className="menu-actions">
+            <LandingEnter />
+            <AssistButton />
+          </div>
+        </header>
+      }
+      tablet={
+        <aside className="tablet-rail" aria-label="Menú público">
+          <BrandLockup to="/" />
+          <p className="menu-kicker">Para mirar</p>
+          <nav className="rail-places" aria-label="Secciones">
+            <LandingPlaces />
+          </nav>
+          <p className="menu-kicker">Entrar</p>
+          <div className="menu-actions">
+            <LandingEnter />
+            <AssistButton />
+          </div>
+        </aside>
+      }
+      phone={<PhonePublic />}
+    />
+  )
+}
+
+/** Menú de celular en páginas que en escritorio no llevan la barra. */
+export function PhonePublicNav() {
+  return (
+    <div className="menu-slot menu-slot-phone">
+      <PhonePublic />
+    </div>
+  )
+}
+
+/** En la sala: el menú de adentro si ya entraste, el público si no. */
+export function PhoneContextNav() {
+  const { profile } = useOasis()
+  const handlers = useInteriorHandlers()
+  if (profile.auth === "none") return <PhonePublicNav />
+  return (
+    <div className="menu-slot menu-slot-phone">
+      <PhoneInterior {...handlers} />
+    </div>
   )
 }

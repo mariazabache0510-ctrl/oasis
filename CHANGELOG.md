@@ -30,6 +30,10 @@ El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y l
 - `POST /api/companion` responde en el servidor. `GET /api/health` incluye `ops`.
 - `client/tsconfig.json` resuelve `@modules` con `paths` y sin `baseUrl`.
 - La voz del shell espera la palabra Oasis. El botón Escuchar de la entrada no volvió.
+- El celular deja de heredar la barra de escritorio. Tiene grilla propia en la página pública, en la entrada, en el interior y en la sala: Inicio, Cerca, Rincón, Hablar y, según la pantalla, Tuyo, Ayuda, Noche, Salir y Voz. La tablet conserva el riel y el computador la barra.
+- La detección trata como celular un Android sin la palabra Mobile si la pantalla es chica, un iPhone en sitio de escritorio (agente Macintosh con toque y pantalla corta) y un puntero grueso con ventana chica. Encoger la ventana de escritorio con puntero fino no cambia el menú.
+- Cada ingreso vuelve a abrir el loto. En el celular la introducción ocupa toda la pantalla, con Saltar y Volver, y la barra de escritorio no la cubre.
+- `npm test` incluye la clasificación de dispositivo.
 
 ## [0.1.0] - 2026-10-22
 

@@ -3,6 +3,7 @@ import { EffectComposer, ToneMapping } from "@react-three/postprocessing"
 import gsap from "gsap"
 import { BloomEffect, ToneMappingMode } from "postprocessing"
 import { Component, Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject, type ReactNode } from "react"
+import { Link } from "react-router-dom"
 import type { PerspectiveCamera, PointLight } from "three"
 import { createLotusGarden, poseLotus, type LotusGarden } from "./lotusGarden"
 import {
@@ -65,8 +66,7 @@ function Stage({
 
   useEffect(() => () => {
     tween.current?.kill()
-    bloom?.dispose()
-  }, [bloom])
+  }, [])
 
   useFrame(({ camera }) => {
     if (finished.current) return
@@ -153,11 +153,12 @@ function FailedBloom({ onDone }: { onDone: () => void }) {
 }
 
 export default function LotusStage({ onDone }: { onDone: () => void }) {
+  const phoneStage = document.documentElement.dataset.device === "phone"
   const [direction, setDirection] = useState<PetalDirection>("outward")
   const [quality, setQuality] = useState<LotusQuality>(lotusQuality)
   const directionRef = useRef(direction)
   directionRef.current = direction
-  const garden = useMemo(() => createLotusGarden(quality), [quality])
+  const [garden, setGarden] = useState<LotusGarden | null>(null)
   const flashRef = useRef<HTMLDivElement>(null)
   const glowRef = useRef<HTMLDivElement>(null)
   const markRef = useRef<HTMLParagraphElement>(null)
@@ -166,7 +167,14 @@ export default function LotusStage({ onDone }: { onDone: () => void }) {
   const finish = useRef(onDone)
   finish.current = onDone
 
-  useEffect(() => () => garden.dispose(), [garden])
+  useEffect(() => {
+    const next = createLotusGarden(quality)
+    setGarden(next)
+    return () => {
+      setGarden((current) => (current === next ? null : current))
+      next.dispose()
+    }
+  }, [quality])
 
   useEffect(() => {
     skipButton.current?.focus()
@@ -191,11 +199,12 @@ export default function LotusStage({ onDone }: { onDone: () => void }) {
     <div className="lotus-screen" role="status" aria-label="Abriendo Oasis">
       <div className="lotus-backdrop" />
       <div className="lotus-stage">
+        {garden ? (
         <StageBoundary onDone={() => finish.current()}>
           <Suspense fallback={null}>
             <Canvas
               dpr={quality === "light" ? 0.5 : [1, 1.2]}
-              camera={{ fov: 38, near: 0.06, far: 60, position: [4.02, 2.72, 3.84] }}
+              camera={{ fov: phoneStage ? 54 : 38, near: 0.06, far: 60, position: [4.02, 2.72, 3.84] }}
               gl={{
                 antialias: quality === "full",
                 alpha: false,
@@ -217,6 +226,7 @@ export default function LotusStage({ onDone }: { onDone: () => void }) {
             </Canvas>
           </Suspense>
         </StageBoundary>
+        ) : null}
       </div>
       <p ref={markRef} className="lotus-mark">
         Oasis
@@ -227,6 +237,9 @@ export default function LotusStage({ onDone }: { onDone: () => void }) {
         <button ref={skipButton} className="lotus-skip" type="button" onClick={() => skipRef.current()}>
           Saltar
         </button>
+        <Link className="lotus-skip lotus-back" to="/">
+          Volver
+        </Link>
         <button
           className="lotus-skip"
           type="button"
